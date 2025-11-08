@@ -2,7 +2,7 @@
  * AUTHENTICATION REACT QUERY HOOKS
  *
  * Hooks de React Query para autenticación y gestión de usuarios.
- * Usa el Authentication Adapter del patrón Adapter.
+ * Usa el Authentication Service del patrón Service.
  *
  * Hooks disponibles:
  * - useUsers: Obtener todos los usuarios
@@ -16,7 +16,8 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { authAdapter, RegisterDto, LoginDto, UpdateUserDto } from '@/app/infrastructure/authentication.adapter'
+import authenticationService from '@/app/services/auth/authentication.service'
+import type { RegisterDto, LoginDto, UpdateUserDto } from '@/app/interfaces/auth.interface'
 
 // ==================== QUERY KEYS ====================
 
@@ -38,7 +39,7 @@ export const authQueryKeys = {
 export function useUsers() {
   return useQuery({
     queryKey: authQueryKeys.users(),
-    queryFn: () => authAdapter.getAllUsers(),
+    queryFn: () => authenticationService.getAllUsers(),
   })
 }
 
@@ -53,7 +54,7 @@ export function useUsers() {
 export function useUser(userId: string | undefined) {
   return useQuery({
     queryKey: userId ? authQueryKeys.user(userId) : ['auth', 'user', 'undefined'],
-    queryFn: () => authAdapter.getUserById(userId!),
+    queryFn: () => authenticationService.getUserById(userId!),
     enabled: !!userId, // Solo ejecutar si userId existe
   })
 }
@@ -80,7 +81,7 @@ export function useRegister() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (dto: RegisterDto) => authAdapter.register(dto),
+    mutationFn: (dto: RegisterDto) => authenticationService.register(dto),
     onSuccess: () => {
       // Invalidar la lista de usuarios para que se actualice
       queryClient.invalidateQueries({ queryKey: authQueryKeys.users() })
@@ -106,7 +107,7 @@ export function useRegister() {
  */
 export function useLogin() {
   return useMutation({
-    mutationFn: (dto: LoginDto) => authAdapter.login(dto),
+    mutationFn: (dto: LoginDto) => authenticationService.login(dto),
   })
 }
 
@@ -130,7 +131,7 @@ export function useUpdateUser() {
 
   return useMutation({
     mutationFn: ({ userId, data }: { userId: string; data: UpdateUserDto }) =>
-      authAdapter.updateUser(userId, data),
+      authenticationService.updateUser(userId, data),
     onSuccess: (updatedUser) => {
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: authQueryKeys.users() })
@@ -161,7 +162,7 @@ export function useDeleteUser() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (userId: string) => authAdapter.deleteUser(userId),
+    mutationFn: (userId: string) => authenticationService.deleteUser(userId),
     onSuccess: () => {
       // Invalidar la lista de usuarios
       queryClient.invalidateQueries({ queryKey: authQueryKeys.users() })
