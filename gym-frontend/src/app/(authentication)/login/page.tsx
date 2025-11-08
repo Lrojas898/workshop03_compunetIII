@@ -10,11 +10,13 @@
  * - Redirección según el rol del usuario
  */
 
+import { LoginForm } from '@/app/components/features/authentication/LoginForm'
+
+export const metadata = {
+  title: 'Iniciar Sesión | Gym Manager',
+  description: 'Inicia sesión en tu cuenta de Gym Manager',
+}
+
 export default function LoginPage() {
-  return (
-    <div>
-      <h1>Login Page</h1>
-      {/* TODO: Implementar LoginForm component */}
-    </div>
-  )
+  return <LoginForm />
 }

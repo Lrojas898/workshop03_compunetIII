@@ -5,7 +5,6 @@
  */
 
 import axios from "axios";
-import { getSession } from 'next-auth/react';
 
 const instance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/",
@@ -17,14 +16,9 @@ const instance = axios.create({
 
 // Request Interceptor - Agregar token de autenticación
 instance.interceptors.request.use(
-    async (config) => {
-        // Intentar obtener token desde NextAuth primero
-        const session = await getSession();
-
-        if (session?.accessToken) {
-            config.headers.Authorization = `Bearer ${session.accessToken}`;
-        } else {
-            // Fallback a localStorage para compatibilidad
+    (config) => {
+        // Obtener token desde localStorage
+        if (typeof window !== 'undefined') {
             const token = localStorage.getItem('authToken');
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
