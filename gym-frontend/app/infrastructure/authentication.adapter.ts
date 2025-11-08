@@ -1,138 +1,238 @@
 /**
- * AUTHENTICATION ADAPTER
+ * AUTHENTICATION ADAPTER - Temple Gym API
  *
- * Adapter para operaciones de autenticación.
- * Encapsula toda la lógica de comunicación con los endpoints de auth.
+ * Adapter para operaciones de autenticación y gestión de usuarios.
+ * Endpoints reales del backend Temple Gym.
  *
- * Endpoints (EJEMPLO - reemplazar con los reales):
- * - POST /api/auth/login
- * - POST /api/auth/register
- * - POST /api/auth/logout
- * - GET /api/auth/me
- * - POST /api/auth/refresh-token
+ * Endpoints:
+ * - POST /auth/register
+ * - POST /auth/login
+ * - GET /auth (solo admin)
+ * - GET /auth/:id (solo admin)
+ * - PATCH /auth/:id
+ * - DELETE /auth/:id (solo admin)
  */
 
-import { IHttpClient } from '../domain/IHttpClient'
+import { getHttpClient } from './axios-http-client'
+import { API_CONFIG, ValidRoles } from '@/lib/configuration/api-endpoints'
 
 // ==================== TYPES ====================
 
-export interface LoginCredentials {
-  email: string
-  password: string
+export interface Role {
+  id: string
+  name: ValidRoles
 }
 
-export interface RegisterData {
-  name: string
+export interface User {
+  id: string
   email: string
-  password: string
+  fullName: string
+  age: number
+  isActive: boolean
+  roles: Role[]
 }
 
 export interface AuthResponse {
-  user: {
-    id: string
-    name: string
-    email: string
-    role: 'ADMIN' | 'RECEPTIONIST' | 'COACH' | 'CLIENT'
-  }
+  user: User
   token: string
-  refreshToken?: string
 }
 
-export interface UserProfile {
-  id: string
-  name: string
-  email: string
-  role: string
-  phone?: string
-  createdAt: string
+// ==================== DTOs ====================
+
+/**
+ * DTO para registro de nuevo usuario
+ * Coincide con CreateUserDto del backend
+ */
+export interface RegisterDto {
+  email: string        // @IsEmail() @IsNotEmpty()
+  fullName: string     // @IsString() @IsNotEmpty()
+  age: number          // @IsInt() @Min(1) @Max(120)
+  password: string     // @IsString() @MinLength(6) @MaxLength(50)
+}
+
+/**
+ * DTO para login
+ * Coincide con LoginDto del backend
+ */
+export interface LoginDto {
+  email: string        // @IsString() @IsEmail()
+  password: string     // @IsString() @MinLength(6) @MaxLength(50)
+}
+
+/**
+ * DTO para actualizar usuario
+ * Coincide con UpdateUserDto del backend (PartialType de CreateUserDto)
+ */
+export interface UpdateUserDto {
+  email?: string       // @IsEmail() (opcional)
+  fullName?: string    // @IsString() (opcional)
+  age?: number         // @IsInt() @Min(1) @Max(120) (opcional)
+  password?: string    // @IsString() @MinLength(6) @MaxLength(50) (opcional)
+  isActive?: boolean   // @IsBoolean() @IsOptional()
 }
 
 // ==================== ADAPTER ====================
 
 export class AuthenticationAdapter {
-  constructor(private readonly httpClient: IHttpClient) {}
+  private httpClient = getHttpClient()
 
   /**
-   * Iniciar sesión
-   * @param credentials - Email y contraseña del usuario
-   * @returns Información del usuario y token de autenticación
+   * POST /auth/register
+   * Registra un nuevo usuario en el sistema
+   *
+   * @param dto - Datos del usuario (email, fullName, age, password)
+   * @returns Usuario creado y token JWT
+   * @throws Error si el email ya existe o los datos son inválidos
+   *
+   * @example
+   * const result = await authAdapter.register({
+   *   email: "john@example.com",
+   *   fullName: "John Doe",
+   *   age: 25,
+   *   password: "Password123"
+   * })
    */
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    try {
-      // TODO: Reemplazar con tu endpoint real
-      const response = await this.httpClient.post<AuthResponse>(
-        '/api/auth/login',
-        credentials
-      )
-
-      return response.data
-    } catch (error) {
-      throw new Error('Error al iniciar sesión. Verifica tus credenciales.')
-    }
+  async register(dto: RegisterDto): Promise<AuthResponse> {
+    const response = await this.httpClient.post<AuthResponse>(
+      API_CONFIG.ENDPOINTS.REGISTER,
+      dto
+    )
+    return response.data
   }
 
   /**
-   * Registrar nuevo usuario
-   * @param userData - Datos del nuevo usuario
-   * @returns Usuario creado y token
+   * POST /auth/login
+   * Inicia sesión en el sistema
+   *
+   * @param dto - Credenciales (email, password)
+   * @returns Usuario y token JWT
+   * @throws Error si las credenciales son incorrectas
+   *
+   * @example
+   * const result = await authAdapter.login({
+   *   email: "john@example.com",
+   *   password: "Password123"
+   * })
    */
-  async register(userData: RegisterData): Promise<AuthResponse> {
-    try {
-      // TODO: Reemplazar con tu endpoint real
-      const response = await this.httpClient.post<AuthResponse>(
-        '/api/auth/register',
-        userData
-      )
-
-      return response.data
-    } catch (error) {
-      throw new Error('Error al registrar usuario. El email puede estar en uso.')
-    }
+  async login(dto: LoginDto): Promise<AuthResponse> {
+    const response = await this.httpClient.post<AuthResponse>(
+      API_CONFIG.ENDPOINTS.LOGIN,
+      dto
+    )
+    return response.data
   }
 
   /**
-   * Cerrar sesión
+   * GET /auth
+   * Obtiene todos los usuarios del sistema
+   *
+   * @returns Array de usuarios
+   * @throws Error si no tiene permisos (solo admin)
+   *
+   * @example
+   * const users = await authAdapter.getAllUsers()
    */
-  async logout(): Promise<void> {
-    try {
-      // TODO: Reemplazar con tu endpoint real
-      await this.httpClient.post('/api/auth/logout')
-    } catch (error) {
-      throw new Error('Error al cerrar sesión.')
-    }
+  async getAllUsers(): Promise<User[]> {
+    const response = await this.httpClient.get<User[]>(API_CONFIG.ENDPOINTS.AUTH)
+    return response.data
   }
 
   /**
-   * Obtener perfil del usuario actual
-   * @returns Información del usuario autenticado
+   * GET /auth/:id
+   * Obtiene un usuario específico por ID
+   *
+   * @param userId - UUID del usuario
+   * @returns Usuario encontrado
+   * @throws Error si no existe o no tiene permisos (solo admin)
+   *
+   * @example
+   * const user = await authAdapter.getUserById("550e8400-e29b-41d4-a716-446655440000")
    */
-  async getCurrentUser(): Promise<UserProfile> {
-    try {
-      // TODO: Reemplazar con tu endpoint real
-      const response = await this.httpClient.get<UserProfile>('/api/auth/me')
-
-      return response.data
-    } catch (error) {
-      throw new Error('Error al obtener información del usuario.')
-    }
+  async getUserById(userId: string): Promise<User> {
+    const response = await this.httpClient.get<User>(
+      `${API_CONFIG.ENDPOINTS.AUTH}/${userId}`
+    )
+    return response.data
   }
 
   /**
-   * Refrescar token de autenticación
-   * @param refreshToken - Token de refresco
-   * @returns Nuevo token de acceso
+   * PATCH /auth/:id
+   * Actualiza un usuario existente
+   *
+   * @param userId - UUID del usuario a actualizar
+   * @param dto - Datos a actualizar (parciales)
+   * @returns Usuario actualizado
+   * @throws Error si no tiene permisos o datos inválidos
+   *
+   * @example
+   * const updated = await authAdapter.updateUser("user-id", {
+   *   fullName: "John Updated",
+   *   age: 26
+   * })
    */
-  async refreshToken(refreshToken: string): Promise<{ token: string }> {
-    try {
-      // TODO: Reemplazar con tu endpoint real
-      const response = await this.httpClient.post<{ token: string }>(
-        '/api/auth/refresh-token',
-        { refreshToken }
-      )
+  async updateUser(userId: string, dto: UpdateUserDto): Promise<User> {
+    const response = await this.httpClient.patch<User>(
+      `${API_CONFIG.ENDPOINTS.AUTH}/${userId}`,
+      dto
+    )
+    return response.data
+  }
 
-      return response.data
-    } catch (error) {
-      throw new Error('Error al refrescar token.')
-    }
+  /**
+   * DELETE /auth/:id
+   * Elimina un usuario del sistema
+   *
+   * @param userId - UUID del usuario a eliminar
+   * @returns Usuario eliminado
+   * @throws Error si no tiene permisos (solo admin)
+   *
+   * @example
+   * const deleted = await authAdapter.deleteUser("user-id")
+   */
+  async deleteUser(userId: string): Promise<User> {
+    const response = await this.httpClient.delete<User>(
+      `${API_CONFIG.ENDPOINTS.AUTH}/${userId}`
+    )
+    return response.data
+  }
+
+  // ==================== HELPER METHODS ====================
+
+  /**
+   * Verifica si un usuario tiene un rol específico
+   */
+  static hasRole(user: User, role: ValidRoles): boolean {
+    return user.roles.some(r => r.name === role)
+  }
+
+  /**
+   * Verifica si el usuario es admin
+   */
+  static isAdmin(user: User): boolean {
+    return this.hasRole(user, ValidRoles.ADMIN)
+  }
+
+  /**
+   * Verifica si el usuario es recepcionista
+   */
+  static isReceptionist(user: User): boolean {
+    return this.hasRole(user, ValidRoles.RECEPTIONIST)
+  }
+
+  /**
+   * Verifica si el usuario es coach
+   */
+  static isCoach(user: User): boolean {
+    return this.hasRole(user, ValidRoles.COACH)
+  }
+
+  /**
+   * Verifica si el usuario es cliente
+   */
+  static isClient(user: User): boolean {
+    return this.hasRole(user, ValidRoles.CLIENT)
   }
 }
+
+// Exportar instancia singleton (opcional)
+export const authAdapter = new AuthenticationAdapter()

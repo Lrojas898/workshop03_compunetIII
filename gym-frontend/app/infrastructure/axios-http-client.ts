@@ -24,11 +24,11 @@ export class AxiosHttpClient implements IHttpClient {
    * @param baseURL - URL base del backend API (default: desde env o localhost:9000)
    */
   constructor(baseURL?: string) {
-    const apiBaseURL = baseURL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000'
+    const apiBaseURL = baseURL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 
     this.axiosInstance = axios.create({
       baseURL: apiBaseURL,
-      timeout: 10000, // 10 segundos
+      timeout: 30000, // 30 segundos
       headers: {
         'Content-Type': 'application/json',
       },
