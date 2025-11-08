@@ -14,6 +14,7 @@
  */
 
 import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios'
+import { getSession } from 'next-auth/react'
 import { IHttpClient, HttpConfig, HttpClientResponse } from '../domain/IHttpClient'
 
 export class AxiosHttpClient implements IHttpClient {
@@ -42,14 +43,16 @@ export class AxiosHttpClient implements IHttpClient {
    * Configura interceptores por defecto
    */
   private setupDefaultInterceptors(): void {
-    // Request interceptor: agregar token de autenticación
+    // Request interceptor: agregar token de autenticación desde NextAuth
     this.axiosInstance.interceptors.request.use(
-      (config) => {
-        // TODO: Obtener token de NextAuth o localStorage
-        // const token = getAuthToken()
-        // if (token) {
-        //   config.headers.Authorization = `Bearer ${token}`
-        // }
+      async (config) => {
+        // Obtener sesión de NextAuth
+        const session = await getSession()
+
+        if (session?.accessToken) {
+          config.headers.Authorization = `Bearer ${session.accessToken}`
+        }
+
         return config
       },
       (error) => {
@@ -60,25 +63,29 @@ export class AxiosHttpClient implements IHttpClient {
     // Response interceptor: manejo global de errores
     this.axiosInstance.interceptors.response.use(
       (response) => response,
-      (error) => {
-        // Manejo de errores comunes
+      async (error) => {
         if (error.response) {
-          switch (error.response.status) {
+          const { status, data } = error.response
+
+          switch (status) {
             case 401:
-              // TODO: Redirigir a login o refrescar token
-              console.error('Unauthorized - Redirecting to login')
+              // Token expirado - redirigir a login
+              if (typeof window !== 'undefined') {
+                window.location.href = '/login'
+              }
               break
             case 403:
-              console.error('Forbidden - Insufficient permissions')
+              console.error('Forbidden:', data.message)
               break
             case 404:
-              console.error('Resource not found')
+              console.error('Not found:', data.message)
               break
             case 500:
-              console.error('Internal server error')
+              console.error('Server error:', data.message)
               break
           }
         }
+
         return Promise.reject(error)
       }
     )
