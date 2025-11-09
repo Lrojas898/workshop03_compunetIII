@@ -42,7 +42,7 @@ export default function MembershipsManagementPage() {
       setLoading(true)
       const data = await membershipsService.getAll()
       // Filter only active memberships
-      setMemberships(data.filter(m => m.status))
+      setMemberships(data.filter(m => m.isActive))
     } catch (error) {
       console.error('Error loading memberships:', error)
     } finally {

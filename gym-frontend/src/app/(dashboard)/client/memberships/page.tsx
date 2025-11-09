@@ -65,8 +65,8 @@ export default function MembershipsPage() {
     const selected = memberships.filter(m => selectedMembershipIds.includes(m.id))
     return {
       cost: selected.reduce((sum, m) => sum + m.cost, 0),
-      gym: selected.reduce((sum, m) => sum + m.max_gym_visits_per_month, 0),
-      classes: selected.reduce((sum, m) => sum + m.max_classes_per_month, 0),
+      gym: selected.reduce((sum, m) => sum + m.max_gym_assistance, 0),
+      classes: selected.reduce((sum, m) => sum + m.max_classes_assistance, 0),
       maxDuration: selected.length > 0 ? Math.max(...selected.map(m => m.duration_months)) : 0
     }
   }
@@ -82,9 +82,21 @@ export default function MembershipsPage() {
     setPurchasing(true)
 
     try {
-      await subscriptionsService.createFromMemberships(selectedMembershipIds, memberships)
+      // Obtener userId del localStorage
+      const userDataStr = localStorage.getItem('userData')
+      if (!userDataStr) {
+        setError('No se pudo obtener información del usuario')
+        setPurchasing(false)
+        return
+      }
 
-      setSuccess('¡Suscripción creada exitosamente! Redirigiendo...')
+      const userData = JSON.parse(userDataStr)
+      const userId = userData.id
+
+      // Agregar membresías a la suscripción existente del usuario
+      await subscriptionsService.addMembershipsToUserSubscription(userId, selectedMembershipIds)
+
+      setSuccess('¡Membresías agregadas exitosamente! Redirigiendo...')
 
       setTimeout(() => {
         router.push('/client/my-subscription')
@@ -162,11 +174,11 @@ export default function MembershipsPage() {
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <Check size={16} className="text-green-600" />
-                      <span>{membership.max_gym_visits_per_month} visitas al gimnasio/mes</span>
+                      <span>{membership.max_gym_assistance} visitas al gimnasio/mes</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Check size={16} className="text-green-600" />
-                      <span>{membership.max_classes_per_month} clases/mes</span>
+                      <span>{membership.max_classes_assistance} clases/mes</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Check size={16} className="text-green-600" />

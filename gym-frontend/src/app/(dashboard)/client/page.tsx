@@ -74,19 +74,10 @@ export default function ClientDashboardPage() {
     }
   }
 
-  const calculateDaysRemaining = () => {
-    if (!subscription) return 0
-
-    const purchaseDate = new Date(subscription.purchase_date)
-    const expirationDate = new Date(purchaseDate)
-    expirationDate.setMonth(expirationDate.getMonth() + subscription.duration_months)
-
-    const today = new Date()
-    const diffTime = expirationDate.getTime() - today.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-    return diffDays > 0 ? diffDays : 0
-  }
+  // Obtener beneficios actuales (solo del item activo)
+  const currentBenefits = subscription ? subscriptionsService.getCurrentBenefits(subscription) : null
+  const daysRemaining = subscription ? subscriptionsService.calculateDaysRemaining(subscription) : 0
+  const activeItem = subscription ? subscriptionsService.getActiveItem(subscription) : null
 
   const quickAccessLinks = [
     {
@@ -134,7 +125,7 @@ export default function ClientDashboardPage() {
         <div className="bg-white rounded-lg shadow p-8 text-center">
           <p className="text-gray-500">Cargando información...</p>
         </div>
-      ) : subscription ? (
+      ) : activeItem ? (
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Estado de Suscripción</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -143,7 +134,7 @@ export default function ClientDashboardPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-500">Estado</p>
                   <p className="text-2xl font-bold text-green-600 mt-2">
-                    {subscription.isActive ? 'Activa' : 'Inactiva'}
+                    {subscription?.isActive ? 'Activa' : 'Inactiva'}
                   </p>
                 </div>
                 <CreditCard className="text-green-600" size={32} />
@@ -153,24 +144,30 @@ export default function ClientDashboardPage() {
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Días Restantes</p>
+                  <p className="text-sm font-medium text-gray-500">Membresía Actual</p>
                   <p className="text-2xl font-bold text-blue-600 mt-2">
-                    {calculateDaysRemaining()}
+                    ${currentBenefits?.cost || 0}
                   </p>
                 </div>
-                <Calendar className="text-blue-600" size={32} />
+                <CreditCard className="text-blue-600" size={32} />
               </div>
             </div>
 
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Membresías Incluidas</p>
-                  <p className="text-2xl font-bold text-purple-600 mt-2">
-                    {subscription.memberships?.length || 0}
+                  <p className="text-sm font-medium text-gray-500">Días Restantes</p>
+                  <p className={`text-2xl font-bold mt-2 ${
+                    daysRemaining > 30
+                      ? 'text-green-600'
+                      : daysRemaining > 7
+                      ? 'text-yellow-600'
+                      : 'text-red-600'
+                  }`}>
+                    {daysRemaining}
                   </p>
                 </div>
-                <BarChart3 className="text-purple-600" size={32} />
+                <Calendar className="text-purple-600" size={32} />
               </div>
             </div>
           </div>
@@ -185,11 +182,17 @@ export default function ClientDashboardPage() {
                   <p className="text-2xl font-bold text-blue-900">
                     {attendanceStatus.availableAttendances.gym}
                   </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    de {currentBenefits?.gym || 0} totales
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-blue-800">Clases</p>
                   <p className="text-2xl font-bold text-blue-900">
                     {attendanceStatus.availableAttendances.classes}
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    de {currentBenefits?.classes || 0} totales
                   </p>
                 </div>
               </div>
@@ -198,7 +201,7 @@ export default function ClientDashboardPage() {
         </section>
       ) : (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <h3 className="font-bold text-yellow-900 mb-2">No tienes una suscripción activa</h3>
+          <h3 className="font-bold text-yellow-900 mb-2">No tienes membresía activa</h3>
           <p className="text-yellow-800 text-sm mb-4">
             Adquiere una membresía para comenzar a disfrutar de nuestros servicios.
           </p>
