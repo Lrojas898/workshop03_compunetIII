@@ -125,7 +125,6 @@ export default function DashboardLayout({
   const coachNavItems = [
     { href: '/coach', label: 'Dashboard Coach', icon: LayoutDashboard },
     { href: '/coach/classes', label: 'Gestión de Clases', icon: Calendar },
-    { href: '/coach/members', label: 'Mis Miembros', icon: Users },
   ]
 
   const receptionistNavItems = [

@@ -13,7 +13,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Edit2, Trash2, Power, AlertCircle, CheckCircle } from 'lucide-react'
+import { Plus, Edit2, Trash2, Power, AlertCircle, CheckCircle, Users } from 'lucide-react'
 import { Button } from '@/app/components/ui/Button'
 import classesService from '@/app/services/classes/classes.service'
 import type { Class, CreateClassDto } from '@/app/interfaces/classes.interface'
@@ -129,6 +129,12 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
       console.error('Error deleting class:', err)
       setError(err.response?.data?.message || 'Error al eliminar clase')
     }
+  }
+
+  // Handler para ver asistentes de la clase
+  const handleViewAttendees = (classItem: Class) => {
+    // Aquí puedes abrir un modal, navegar a una página o mostrar la lista de asistentes
+    alert(`Ver asistentes para la clase: ${classItem.name}`)
   }
 
   const isAdmin = userRole === 'admin'
@@ -280,6 +286,14 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
                       title="Editar"
                     >
                       <Edit2 size={16} />
+                    </button>
+                    {/* Botón para ver asistentes de la clase */}
+                    <button
+                      onClick={() => handleViewAttendees(classItem)}
+                      className="text-purple-600 hover:text-purple-800"
+                      title="Ver asistentes"
+                    >
+                      <Users size={16} />
                     </button>
                     {isAdmin && (
                       <>
