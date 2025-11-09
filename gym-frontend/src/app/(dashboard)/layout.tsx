@@ -16,8 +16,11 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, CreditCard, FileText, TrendingUp, UserCheck, ShoppingBag, Calendar, ClipboardList } from 'lucide-react'
-import type { User } from '@/app/interfaces/auth.interface'
+import { LayoutDashboard, Users, CreditCard, FileText, TrendingUp, UserCheck, ShoppingBag, Calendar, ClipboardList, UserCircle, LogOut, ChevronDown } from 'lucide-react'
+import { Modal } from '@/app/components/ui/Modal'
+import { EditProfileForm } from '@/app/components/features/users/EditProfileForm'
+import authenticationService from '@/app/services/auth/authentication.service'
+import type { User, UpdateUserDto } from '@/app/interfaces/auth.interface'
 
 export default function DashboardLayout({
   children,
@@ -26,6 +29,8 @@ export default function DashboardLayout({
 }) {
   const router = useRouter()
   const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false)
 
   useEffect(() => {
     // Cargar datos del usuario desde localStorage
@@ -40,11 +45,48 @@ export default function DashboardLayout({
     }
   }, [])
 
+  // Cerrar el menú cuando se hace click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isProfileMenuOpen) {
+        const target = event.target as HTMLElement
+        if (!target.closest('.profile-menu-container')) {
+          setIsProfileMenuOpen(false)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isProfileMenuOpen])
+
   const handleLogout = () => {
     localStorage.removeItem('authToken')
     localStorage.removeItem('userData')
     localStorage.removeItem('rememberMe')
     router.push('/login')
+  }
+
+  const handleEditProfile = async (data: UpdateUserDto) => {
+    if (!currentUser) return
+
+    try {
+      const updatedUser = await authenticationService.updateUser(currentUser.id, data)
+      
+      // Actualizar el usuario en localStorage
+      const updatedUserData = {
+        ...currentUser,
+        ...data
+      }
+      localStorage.setItem('userData', JSON.stringify(updatedUserData))
+      setCurrentUser(updatedUserData)
+      setIsEditProfileModalOpen(false)
+      
+      // Recargar la página para reflejar los cambios
+      window.location.reload()
+    } catch (error: any) {
+      throw error
+    }
   }
 
   // Determinar el rol principal del usuario
@@ -99,17 +141,44 @@ export default function DashboardLayout({
           <Link href="/" className="text-2xl font-bold text-blue-600">
             Gym Manager
           </Link>
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-600">
-              <p className="font-medium">{currentUser?.fullName || userRoleLabel}</p>
-              <p className="text-xs text-gray-500">{userRoleLabel}</p>
-            </div>
+          <div className="relative profile-menu-container">
             <button
-              onClick={handleLogout}
-              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition"
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              className="flex items-center space-x-3 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition"
             >
-              Cerrar sesión
+              <div className="text-right">
+                <p className="font-medium">{currentUser?.fullName || userRoleLabel}</p>
+                <p className="text-xs text-gray-500">{userRoleLabel}</p>
+              </div>
+              <ChevronDown size={16} className={`transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
             </button>
+
+            {/* Dropdown Menu */}
+            {isProfileMenuOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                <button
+                  onClick={() => {
+                    setIsProfileMenuOpen(false)
+                    setIsEditProfileModalOpen(true)
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition"
+                >
+                  <UserCircle size={18} />
+                  <span>Editar Perfil</span>
+                </button>
+                <div className="border-t border-gray-200 my-1"></div>
+                <button
+                  onClick={() => {
+                    setIsProfileMenuOpen(false)
+                    handleLogout()
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
+                >
+                  <LogOut size={18} />
+                  <span>Cerrar Sesión</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
@@ -146,6 +215,22 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+
+      {/* Modal de Edición de Perfil */}
+      {currentUser && (
+        <Modal
+          isOpen={isEditProfileModalOpen}
+          onClose={() => setIsEditProfileModalOpen(false)}
+          title="Editar Mi Perfil"
+          size="md"
+        >
+          <EditProfileForm
+            user={currentUser}
+            onSubmit={handleEditProfile}
+            onCancel={() => setIsEditProfileModalOpen(false)}
+          />
+        </Modal>
+      )}
     </div>
   )
 }

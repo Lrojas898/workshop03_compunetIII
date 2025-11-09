@@ -16,19 +16,22 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Eye, Trash2 } from 'lucide-react'
+import { Plus, Eye, Trash2, Edit } from 'lucide-react'
 import { Button } from '@/app/components/ui/Button'
 import { Table } from '@/app/components/ui/Table'
 import { Modal } from '@/app/components/ui/Modal'
 import { CreateUserForm } from '@/app/components/features/users/CreateUserForm'
+import { EditUserForm } from '@/app/components/features/users/EditUserForm'
 import authenticationService from '@/app/services/auth/authentication.service'
-import type { User, RegisterDto } from '@/app/interfaces/auth.interface'
+import type { User, RegisterDto, UpdateUserDto } from '@/app/interfaces/auth.interface'
 
 export default function UsersManagementPage() {
   const router = useRouter()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
   useEffect(() => {
     loadUsers()
@@ -54,6 +57,22 @@ export default function UsersManagementPage() {
     } catch (error: any) {
       throw error
     }
+  }
+
+  const handleEditUser = async (userId: string, data: UpdateUserDto) => {
+    try {
+      await authenticationService.updateUser(userId, data)
+      setIsEditModalOpen(false)
+      setSelectedUser(null)
+      loadUsers()
+    } catch (error: any) {
+      throw error
+    }
+  }
+
+  const handleOpenEditModal = (user: User) => {
+    setSelectedUser(user)
+    setIsEditModalOpen(true)
   }
 
   const handleDeleteUser = async (userId: string) => {
@@ -118,6 +137,13 @@ export default function UsersManagementPage() {
             <Eye size={18} />
           </button>
           <button
+            onClick={() => handleOpenEditModal(user)}
+            className="text-green-600 hover:text-green-800 p-1"
+            title="Edit user"
+          >
+            <Edit size={18} />
+          </button>
+          <button
             onClick={() => handleDeleteUser(user.id)}
             className="text-red-600 hover:text-red-800 p-1"
             title="Delete user"
@@ -161,6 +187,27 @@ export default function UsersManagementPage() {
           onSubmit={handleCreateUser}
           onCancel={() => setIsCreateModalOpen(false)}
         />
+      </Modal>
+
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          setSelectedUser(null)
+        }}
+        title="Edit User"
+        size="md"
+      >
+        {selectedUser && (
+          <EditUserForm
+            user={selectedUser}
+            onSubmit={handleEditUser}
+            onCancel={() => {
+              setIsEditModalOpen(false)
+              setSelectedUser(null)
+            }}
+          />
+        )}
       </Modal>
     </div>
   )
