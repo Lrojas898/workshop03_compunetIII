@@ -99,7 +99,7 @@ export default function MembershipsPage() {
       setSuccess('¡Membresías agregadas exitosamente! Redirigiendo...')
 
       setTimeout(() => {
-        router.push('/client/my-subscription')
+        window.location.href = '/client/my-subscription';
       }, 2000)
     } catch (err: any) {
       console.error('Error purchasing memberships:', err)
