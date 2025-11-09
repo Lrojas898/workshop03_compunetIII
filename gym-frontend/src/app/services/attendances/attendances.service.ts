@@ -136,6 +136,17 @@ const attendancesService = {
       );
       return classes;
     },
+
+    /**
+     * GET /attendances/class/:classId/attendees
+     * Obtiene la lista de asistentes de una clase
+     */
+    getClassAttendees: async (classId: string) => {
+      const attendees = await apiService.get<ClassAttendance[]>(
+        `/attendances/class/${classId}/attendees`
+      );
+      return attendees;
+    },
 };
 
 export default attendancesService;

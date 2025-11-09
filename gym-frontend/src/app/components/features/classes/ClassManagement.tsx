@@ -16,7 +16,10 @@ import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Power, AlertCircle, CheckCircle, Users } from 'lucide-react'
 import { Button } from '@/app/components/ui/Button'
 import classesService from '@/app/services/classes/classes.service'
+import attendancesService from '@/app/services/attendances/attendances.service'
+import { Modal } from '@/app/components/ui/Modal'
 import type { Class, CreateClassDto } from '@/app/interfaces/classes.interface'
+import type { ClassAttendance } from '@/app/interfaces/attendances.interface'
 
 interface ClassManagementProps {
   userRole?: string
@@ -37,6 +40,10 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
     max_capacity: 20,
     isActive: true,
   })
+
+  const [attendeesModalOpen, setAttendeesModalOpen] = useState(false)
+  const [attendees, setAttendees] = useState<ClassAttendance[]>([])
+  const [selectedClass, setSelectedClass] = useState<Class | null>(null)
 
   useEffect(() => {
     loadClasses()
@@ -132,9 +139,16 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
   }
 
   // Handler para ver asistentes de la clase
-  const handleViewAttendees = (classItem: Class) => {
-    // Aquí puedes abrir un modal, navegar a una página o mostrar la lista de asistentes
-    alert(`Ver asistentes para la clase: ${classItem.name}`)
+  const handleViewAttendees = async (classItem: Class) => {
+    setSelectedClass(classItem)
+    setAttendees([])
+    setAttendeesModalOpen(true)
+    try {
+      const data = await attendancesService.getClassAttendees(classItem.id)
+      setAttendees(data)
+    } catch (err) {
+      setAttendees([])
+    }
   }
 
   const isAdmin = userRole === 'admin'
@@ -326,6 +340,32 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
           </div>
         )}
       </div>
+
+      {/* Modal para mostrar asistentes */}
+      {attendeesModalOpen && (
+        <Modal
+          isOpen={attendeesModalOpen}
+          onClose={() => setAttendeesModalOpen(false)}
+          title={`Asistentes de la clase: ${selectedClass?.name}`}
+          size="md"
+        >
+          {attendees.length === 0 ? (
+            <div className="text-gray-500">No hay asistentes registrados.</div>
+          ) : (
+            <ul className="space-y-2">
+              {attendees.map((attendance) => (
+                <li key={attendance.id} className="border-b py-2">
+                  <span className="font-medium">{attendance.user.fullName}</span>
+                  <span className="text-xs text-gray-500 ml-2">{attendance.user.email}</span>
+                  {attendance.notes && (
+                    <span className="ml-2 text-blue-600">Notas: {attendance.notes}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Modal>
+      )}
     </div>
   )
 }
