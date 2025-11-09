@@ -15,11 +15,11 @@
 import type {
   Attendance,
   AttendanceStatus,
-  AttendanceStats,
+  AttendanceStatsResponse,
   CreateAttendanceDto,
   CheckOutDto,
-  GetHistoryParams,
-} from '@/app/interfaces/attendances.interface';
+  AttendanceType,
+} from '@/app/interfaces/attendance.interface';
 import apiService from '../api.service';
 import { API_CONFIG } from '@/lib/configuration/api-endpoints';
 
@@ -63,13 +63,12 @@ const attendancesService = {
    * GET /attendances/history/:userId
    * Obtiene el historial de asistencias de un usuario
    */
-  getHistory: async (params: GetHistoryParams) => {
-    const { userId, from, to, type } = params;
+  getHistory: async (userId: string, params?: { from?: string; to?: string; type?: AttendanceType }) => {
     const queryParams = new URLSearchParams();
 
-    if (from) queryParams.append('from', from);
-    if (to) queryParams.append('to', to);
-    if (type) queryParams.append('type', type);
+    if (params?.from) queryParams.append('from', params.from);
+    if (params?.to) queryParams.append('to', params.to);
+    if (params?.type) queryParams.append('type', params.type);
 
     const query = queryParams.toString();
     const url = `${API_CONFIG.ENDPOINTS.ATTENDANCES}/history/${userId}${
@@ -85,7 +84,7 @@ const attendancesService = {
    * Obtiene estadísticas de asistencia de un usuario
    */
   getStats: async (userId: string) => {
-    const stats = await apiService.get<AttendanceStats>(
+    const stats = await apiService.get<AttendanceStatsResponse>(
       `${API_CONFIG.ENDPOINTS.ATTENDANCES}/stats/${userId}`
     );
     return stats;

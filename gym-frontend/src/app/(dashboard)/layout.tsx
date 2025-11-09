@@ -13,9 +13,11 @@
 
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, CreditCard, FileText, TrendingUp } from 'lucide-react'
+import { LayoutDashboard, Users, CreditCard, FileText, TrendingUp, UserCheck } from 'lucide-react'
+import type { User } from '@/app/interfaces/auth.interface'
 
 export default function DashboardLayout({
   children,
@@ -23,12 +25,51 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    // Cargar datos del usuario desde localStorage
+    const userDataStr = localStorage.getItem('userData')
+    if (userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr)
+        setCurrentUser(userData)
+      } catch (error) {
+        console.error('Error parsing user data:', error)
+      }
+    }
+  }, [])
 
   const handleLogout = () => {
     localStorage.removeItem('authToken')
+    localStorage.removeItem('userData')
     localStorage.removeItem('rememberMe')
     router.push('/login')
   }
+
+  // Determinar el rol principal del usuario
+  const userRole = currentUser?.roles?.[0]?.name || 'user'
+
+  // Navegación para admin
+  const adminNavItems = [
+    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/users', label: 'Usuarios', icon: Users },
+    { href: '/admin/memberships', label: 'Membresías', icon: CreditCard },
+    { href: '/admin/subscriptions', label: 'Suscripciones', icon: FileText },
+    { href: '/admin/analytics', label: 'Analítica', icon: TrendingUp },
+  ]
+
+  // Navegación para recepcionista
+  const receptionistNavItems = [
+    { href: '/receptionist', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/receptionist/check-in', label: 'Check-In / Check-Out', icon: UserCheck },
+    { href: '/receptionist/active-users', label: 'Usuarios Activos', icon: Users },
+  ]
+
+  // Seleccionar navegación según el rol
+  const navItems = userRole === 'admin' ? adminNavItems : receptionistNavItems
+  const sidebarTitle = userRole === 'admin' ? 'Panel Administrativo' : 'Panel de Recepción'
+  const userRoleLabel = userRole === 'admin' ? 'Administrador' : userRole === 'receptionist' ? 'Recepcionista' : 'Usuario'
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -40,7 +81,8 @@ export default function DashboardLayout({
           </Link>
           <div className="flex items-center space-x-4">
             <div className="text-sm text-gray-600">
-              <p className="font-medium">Administrador</p>
+              <p className="font-medium">{currentUser?.fullName || userRoleLabel}</p>
+              <p className="text-xs text-gray-500">{userRoleLabel}</p>
             </div>
             <button
               onClick={handleLogout}
@@ -59,17 +101,11 @@ export default function DashboardLayout({
           <nav className="p-6 space-y-2">
             <div className="mb-8">
               <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                Panel Administrativo
+                {sidebarTitle}
               </h2>
             </div>
 
-            {[
-              { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-              { href: '/admin/users', label: 'Usuarios', icon: Users },
-              { href: '/admin/memberships', label: 'Membresías', icon: CreditCard },
-              { href: '/admin/subscriptions', label: 'Suscripciones', icon: FileText },
-              { href: '/admin/analytics', label: 'Analítica', icon: TrendingUp },
-            ].map((item) => {
+            {navItems.map((item) => {
               const IconComponent = item.icon
               return (
                 <Link
