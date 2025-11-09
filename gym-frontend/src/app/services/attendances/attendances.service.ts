@@ -100,6 +100,17 @@ const attendancesService = {
     );
     return activeUsers;
   },
+
+  /**
+   * GET /attendances
+   * Obtiene todas las asistencias del sistema (solo admin)
+   */
+  getAll: async () => {
+    const attendances = await apiService.get<Attendance[]>(
+      API_CONFIG.ENDPOINTS.ATTENDANCES
+    );
+    return attendances;
+  },
 };
 
 export default attendancesService;

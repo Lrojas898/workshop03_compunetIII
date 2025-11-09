@@ -16,7 +16,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, CreditCard, FileText, TrendingUp, UserCheck, ShoppingBag, Calendar } from 'lucide-react'
+import { LayoutDashboard, Users, CreditCard, FileText, TrendingUp, UserCheck, ShoppingBag, Calendar, ClipboardList } from 'lucide-react'
 import type { User } from '@/app/interfaces/auth.interface'
 
 export default function DashboardLayout({
@@ -56,6 +56,7 @@ export default function DashboardLayout({
     { href: '/admin/users', label: 'Usuarios', icon: Users },
     { href: '/admin/memberships', label: 'Membresías', icon: CreditCard },
     { href: '/admin/subscriptions', label: 'Suscripciones', icon: FileText },
+    { href: '/admin/attendances', label: 'Asistencias', icon: ClipboardList },
     { href: '/admin/analytics', label: 'Analítica', icon: TrendingUp },
   ]
 
