@@ -9,6 +9,7 @@ export { default as authenticationService } from './auth/authentication.service'
 export { default as membershipsService } from './memberships/memberships.service';
 export { default as subscriptionsService } from './subscriptions/subscriptions.service';
 export { default as attendancesService } from './attendances/attendances.service';
+export { default as classesService } from './classes/classes.service';
 
 // Servicio base (opcional exportar)
 export { default as apiService } from './api.service';
@@ -39,8 +40,14 @@ export type {
 export type {
   Attendance,
   AttendanceStatus,
-  AttendanceStats,
   CreateAttendanceDto,
   CheckOutDto,
-  GetHistoryParams,
-} from '@/app/interfaces/attendances.interface';
+  ClassAttendance,
+  RegisterClassAttendanceDto,
+} from '@/app/interfaces/attendance.interface';
+
+export type {
+  Class,
+  CreateClassDto,
+  UpdateClassDto,
+} from '@/app/interfaces/classes.interface';

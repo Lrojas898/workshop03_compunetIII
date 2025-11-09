@@ -5,6 +5,7 @@
  */
 
 import type { User } from './auth.interface'
+import type { Class } from './classes.interface'
 
 export enum AttendanceType {
   GYM = 'gym',
@@ -62,4 +63,16 @@ export interface AttendanceStatsResponse {
   totalGymAttendances: number
   totalClassAttendances: number
   monthlyStats: MonthlyStat[]
+}
+
+export interface ClassAttendance extends Attendance {
+  class: Class
+  notes?: string
+  coach: User
+}
+
+export interface RegisterClassAttendanceDto {
+  userId: string
+  classId: string
+  notes?: string
 }

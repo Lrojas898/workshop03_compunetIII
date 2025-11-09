@@ -37,6 +37,17 @@ export const API_CONFIG = {
     ATTENDANCE_STATS: (userId: string) => `/attendances/stats/${userId}`,
     ACTIVE_ATTENDANCES: '/attendances/active',
 
+    // Coach endpoints
+    REGISTER_CLASS: '/attendances/class/register',
+    MY_CLASSES: '/attendances/class/my-classes',
+    TODAY_CLASSES: '/attendances/class/today',
+
+    // ==================== CLASSES ====================
+    CLASSES: '/classes',
+    CLASS_BY_ID: (id: string) => `/classes/${id}`,
+    ACTIVE_CLASSES: '/classes/active',
+    TOGGLE_CLASS_STATUS: (id: string) => `/classes/${id}/toggle-active`,
+
     // ==================== SEED (Development) ====================
     SEED: '/seed',
   },

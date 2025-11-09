@@ -19,6 +19,8 @@ import type {
   CreateAttendanceDto,
   CheckOutDto,
   AttendanceType,
+  ClassAttendance,
+  RegisterClassAttendanceDto,
 } from '@/app/interfaces/attendance.interface';
 import apiService from '../api.service';
 import { API_CONFIG } from '@/lib/configuration/api-endpoints';
@@ -101,16 +103,39 @@ const attendancesService = {
     return activeUsers;
   },
 
-  /**
-   * GET /attendances
-   * Obtiene todas las asistencias del sistema (solo admin)
-   */
-  getAll: async () => {
-    const attendances = await apiService.get<Attendance[]>(
-      API_CONFIG.ENDPOINTS.ATTENDANCES
-    );
-    return attendances;
-  },
+    /**
+     * POST /attendances/class/register
+     * Registra asistencia a clase (solo coach)
+     */
+    registerClass: async (dto: RegisterClassAttendanceDto) => {
+      const response = await apiService.post<ClassAttendance>(
+        API_CONFIG.ENDPOINTS.REGISTER_CLASS,
+        dto
+      );
+      return response.data;
+    },
+
+    /**
+     * GET /attendances/class/my-classes
+     * Obtiene las clases registradas por el coach autenticado
+     */
+    getMyClasses: async () => {
+      const classes = await apiService.get<ClassAttendance[]>(
+        API_CONFIG.ENDPOINTS.MY_CLASSES
+      );
+      return classes;
+    },
+
+    /**
+     * GET /attendances/class/today
+     * Obtiene todas las clases de hoy
+     */
+    getTodayClasses: async () => {
+      const classes = await apiService.get<ClassAttendance[]>(
+        API_CONFIG.ENDPOINTS.TODAY_CLASSES
+      );
+      return classes;
+    },
 };
 
 export default attendancesService;
