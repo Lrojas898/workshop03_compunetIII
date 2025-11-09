@@ -24,3 +24,34 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Estilos globales para inputs, selects y textareas */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+textarea,
+select {
+  color: #111827; /* text-gray-900 - texto oscuro */
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="number"]::placeholder,
+input[type="tel"]::placeholder,
+input[type="url"]::placeholder,
+input[type="search"]::placeholder,
+textarea::placeholder {
+  color: #9ca3af; /* text-gray-400 - placeholder visible pero más suave */
+}
+
+/* Asegurar que el texto sea visible cuando está deshabilitado */
+input:disabled,
+textarea:disabled,
+select:disabled {
+  color: #6b7280; /* text-gray-500 - gris medio para campos deshabilitados */
+}

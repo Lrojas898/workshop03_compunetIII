@@ -54,6 +54,23 @@ export default function CheckInPage() {
         return
       }
 
+      // Validación 1: Verificar que no sea el mismo usuario (recepcionista)
+      const currentUserStr = localStorage.getItem('userData')
+      if (currentUserStr) {
+        const currentUser = JSON.parse(currentUserStr)
+        if (currentUser.id === user.id) {
+          setError('No puedes registrar asistencia para ti mismo')
+          return
+        }
+      }
+
+      // Validación 2: Verificar que el usuario sea cliente
+      const userRole = user.roles[0]?.name
+      if (userRole !== 'client') {
+        setError(`No se puede registrar asistencia para usuarios con rol de ${userRole}. Solo los clientes pueden registrar asistencias.`)
+        return
+      }
+
       setSelectedUser(user)
 
       // Obtener estado de asistencia del usuario
@@ -79,6 +96,22 @@ export default function CheckInPage() {
   const handleCheckIn = async () => {
     if (!selectedUser) return
 
+    // Validación de seguridad adicional antes de check-in
+    const currentUserStr = localStorage.getItem('userData')
+    if (currentUserStr) {
+      const currentUser = JSON.parse(currentUserStr)
+      if (currentUser.id === selectedUser.id) {
+        setError('❌ No puedes registrar asistencia para ti mismo')
+        return
+      }
+    }
+
+    const userRole = selectedUser.roles[0]?.name
+    if (userRole !== 'client') {
+      setError(`❌ Solo los clientes pueden registrar asistencias`)
+      return
+    }
+
     setError('')
     setSuccess('')
     setActionLoading(true)
@@ -94,7 +127,7 @@ export default function CheckInPage() {
         dateKey
       })
 
-      setSuccess(`Check-in exitoso para ${selectedUser.fullName}`)
+      setSuccess(`✅ Check-in exitoso para ${selectedUser.fullName}`)
 
       // Actualizar estado
       const status = await attendancesService.getStatus(selectedUser.id)
