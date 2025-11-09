@@ -16,19 +16,22 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Eye, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Plus, Eye, ToggleLeft, ToggleRight, Edit } from 'lucide-react'
 import { Button } from '@/app/components/ui/Button'
 import { Table } from '@/app/components/ui/Table'
 import { Modal } from '@/app/components/ui/Modal'
 import { CreateMembershipForm } from '@/app/components/features/memberships/CreateMembershipForm'
+import { EditMembershipForm } from '@/app/components/features/memberships/EditMembershipForm'
 import membershipsService from '@/app/services/memberships/memberships.service'
-import type { Membership, CreateMembershipDto } from '@/app/interfaces/membership.interface'
+import type { Membership, CreateMembershipDto, UpdateMembershipDto } from '@/app/interfaces/membership.interface'
 
 export default function MembershipsManagementPage() {
   const router = useRouter()
   const [memberships, setMemberships] = useState<Membership[]>([])
   const [loading, setLoading] = useState(true)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedMembership, setSelectedMembership] = useState<Membership | null>(null)
 
   useEffect(() => {
     loadMemberships()
@@ -55,6 +58,22 @@ export default function MembershipsManagementPage() {
     } catch (error: any) {
       throw error
     }
+  }
+
+  const handleEditMembership = async (id: string, data: UpdateMembershipDto) => {
+    try {
+      await membershipsService.update(id, data)
+      setIsEditModalOpen(false)
+      setSelectedMembership(null)
+      loadMemberships()
+    } catch (error: any) {
+      throw error
+    }
+  }
+
+  const handleOpenEditModal = (membership: Membership) => {
+    setSelectedMembership(membership)
+    setIsEditModalOpen(true)
   }
 
   const handleToggleStatus = async (id: string) => {
@@ -126,6 +145,13 @@ export default function MembershipsManagementPage() {
             <Eye size={18} />
           </button>
           <button
+            onClick={() => handleOpenEditModal(membership)}
+            className="text-green-600 hover:text-green-800 p-1"
+            title="Edit membership"
+          >
+            <Edit size={18} />
+          </button>
+          <button
             onClick={() => handleToggleStatus(membership.id)}
             className="text-gray-600 hover:text-gray-800 p-1"
             title="Toggle status"
@@ -169,6 +195,27 @@ export default function MembershipsManagementPage() {
           onSubmit={handleCreateMembership}
           onCancel={() => setIsCreateModalOpen(false)}
         />
+      </Modal>
+
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          setSelectedMembership(null)
+        }}
+        title="Edit Membership"
+        size="lg"
+      >
+        {selectedMembership && (
+          <EditMembershipForm
+            membership={selectedMembership}
+            onSubmit={handleEditMembership}
+            onCancel={() => {
+              setIsEditModalOpen(false)
+              setSelectedMembership(null)
+            }}
+          />
+        )}
       </Modal>
     </div>
   )
