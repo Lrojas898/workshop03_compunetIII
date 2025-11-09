@@ -88,7 +88,7 @@ export function RegisterForm() {
 
       // Redirigir al dashboard según rol
       setTimeout(() => {
-        const userRole = response.user.roles[0]?.name
+        const userRole = response.roles[0]?.name
         switch (userRole) {
           case 'admin':
             router.push('/admin')

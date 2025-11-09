@@ -5,7 +5,7 @@
  * Cada rol tiene acceso a diferentes secciones.
  */
 
-import { UserRole } from '@/lib/typescript-types'
+import { ValidRoles } from '@/lib/configuration/api-endpoints'
 
 export interface NavigationItem {
   label: string
@@ -15,8 +15,10 @@ export interface NavigationItem {
   children?: NavigationItem[]
 }
 
+type UserRole = 'admin' | 'receptionist' | 'coach' | 'client'
+
 export const navigationConfig: Record<UserRole, NavigationItem[]> = {
-  ADMIN: [
+  admin: [
     {
       label: 'Dashboard',
       href: '/dashboard/admin',
@@ -44,7 +46,7 @@ export const navigationConfig: Record<UserRole, NavigationItem[]> = {
     },
   ],
 
-  RECEPTIONIST: [
+  receptionist: [
     {
       label: 'Dashboard',
       href: '/dashboard/receptionist',
@@ -62,7 +64,7 @@ export const navigationConfig: Record<UserRole, NavigationItem[]> = {
     },
   ],
 
-  COACH: [
+  coach: [
     {
       label: 'Dashboard',
       href: '/dashboard/coach',
@@ -75,7 +77,7 @@ export const navigationConfig: Record<UserRole, NavigationItem[]> = {
     },
   ],
 
-  CLIENT: [
+  client: [
     {
       label: 'Dashboard',
       href: '/dashboard/client',

@@ -7,7 +7,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/",
+    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
     timeout: 30000,
     headers: {
         "Content-Type": "application/json"
@@ -44,6 +44,7 @@ instance.interceptors.response.use(
             // Redirigir a login si token expirado o no autorizado
             if (status === 401) {
                 if (typeof window !== 'undefined') {
+                    localStorage.removeItem('authToken');
                     window.location.href = '/login';
                 }
             }

@@ -16,7 +16,7 @@ import type {
   Membership,
   CreateMembershipDto,
   UpdateMembershipDto,
-} from '@/app/interfaces/memberships.interface';
+} from '@/app/interfaces/membership.interface';
 import apiService from '../api.service';
 import { API_CONFIG } from '@/lib/configuration/api-endpoints';
 

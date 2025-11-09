@@ -63,7 +63,7 @@ export function LoginForm() {
       }
 
       // Redirigir según rol del usuario
-      const userRole = response.user.roles[0]?.name
+      const userRole = response.roles[0]?.name
       switch (userRole) {
         case 'admin':
           router.push('/admin')
@@ -112,7 +112,7 @@ export function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@email.com"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             disabled={loading}
           />
         </div>
@@ -127,7 +127,7 @@ export function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             disabled={loading}
           />
         </div>

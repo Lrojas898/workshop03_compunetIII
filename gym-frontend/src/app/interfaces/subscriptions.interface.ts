@@ -5,7 +5,7 @@
  */
 
 import type { User } from './auth.interface'
-import type { Membership } from './memberships.interface'
+import type { Membership } from './membership.interface'
 
 // ==================== TYPES ====================
 

@@ -22,8 +22,7 @@ export interface User {
   roles: Role[]
 }
 
-export interface AuthResponse {
-  user: User
+export interface AuthResponse extends User {
   token: string
 }
 

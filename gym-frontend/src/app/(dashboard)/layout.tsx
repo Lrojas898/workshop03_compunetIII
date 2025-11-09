@@ -15,6 +15,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { LayoutDashboard, Users, CreditCard, FileText, TrendingUp } from 'lucide-react'
 
 export default function DashboardLayout({
   children,
@@ -63,21 +64,24 @@ export default function DashboardLayout({
             </div>
 
             {[
-              { href: '/admin', label: 'Dashboard', icon: '📊' },
-              { href: '/admin/users', label: 'Usuarios', icon: '👥' },
-              { href: '/admin/memberships', label: 'Membresías', icon: '🎫' },
-              { href: '/admin/subscriptions', label: 'Suscripciones', icon: '📋' },
-              { href: '/admin/analytics', label: 'Analítica', icon: '📈' },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition"
-              >
-                <span className="text-lg">{item.icon}</span>
-                <span className="text-sm font-medium">{item.label}</span>
-              </Link>
-            ))}
+              { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+              { href: '/admin/users', label: 'Usuarios', icon: Users },
+              { href: '/admin/memberships', label: 'Membresías', icon: CreditCard },
+              { href: '/admin/subscriptions', label: 'Suscripciones', icon: FileText },
+              { href: '/admin/analytics', label: 'Analítica', icon: TrendingUp },
+            ].map((item) => {
+              const IconComponent = item.icon
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition"
+                >
+                  <IconComponent size={20} />
+                  <span className="text-sm font-medium">{item.label}</span>
+                </Link>
+              )
+            })}
           </nav>
         </aside>
 
