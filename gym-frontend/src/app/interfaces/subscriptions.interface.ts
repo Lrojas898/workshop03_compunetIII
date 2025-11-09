@@ -28,11 +28,17 @@ export interface Subscription {
 // ==================== DTOs ====================
 
 /**
- * DTO para crear suscripción
- * El backend solo requiere el userId
+ * DTO para crear suscripción completa
+ * Coincide con CreateSubscriptionDto del backend
  */
 export interface CreateSubscriptionDto {
-  userId: string  // @IsUUID()
+  name: string
+  cost: number
+  max_classes_assistance: number
+  max_gym_assistance: number
+  duration_months: number
+  purchase_date: string  // ISO 8601 date
+  membershipIds: string[]  // Array de UUIDs de membresías
 }
 
 /**

@@ -16,7 +16,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, CreditCard, FileText, TrendingUp, UserCheck } from 'lucide-react'
+import { LayoutDashboard, Users, CreditCard, FileText, TrendingUp, UserCheck, ShoppingBag, Calendar } from 'lucide-react'
 import type { User } from '@/app/interfaces/auth.interface'
 
 export default function DashboardLayout({
@@ -66,10 +66,29 @@ export default function DashboardLayout({
     { href: '/receptionist/active-users', label: 'Usuarios Activos', icon: Users },
   ]
 
+  // Navegación para cliente
+  const clientNavItems = [
+    { href: '/client', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/client/memberships', label: 'Membresías Disponibles', icon: ShoppingBag },
+    { href: '/client/my-subscription', label: 'Mi Suscripción', icon: CreditCard },
+    { href: '/client/my-attendance', label: 'Mis Asistencias', icon: Calendar },
+  ]
+
   // Seleccionar navegación según el rol
-  const navItems = userRole === 'admin' ? adminNavItems : receptionistNavItems
-  const sidebarTitle = userRole === 'admin' ? 'Panel Administrativo' : 'Panel de Recepción'
-  const userRoleLabel = userRole === 'admin' ? 'Administrador' : userRole === 'receptionist' ? 'Recepcionista' : 'Usuario'
+  const navItems =
+    userRole === 'admin' ? adminNavItems :
+    userRole === 'receptionist' ? receptionistNavItems :
+    clientNavItems
+
+  const sidebarTitle =
+    userRole === 'admin' ? 'Panel Administrativo' :
+    userRole === 'receptionist' ? 'Panel de Recepción' :
+    'Mi Panel Personal'
+
+  const userRoleLabel =
+    userRole === 'admin' ? 'Administrador' :
+    userRole === 'receptionist' ? 'Recepcionista' :
+    'Cliente'
 
   return (
     <div className="min-h-screen bg-gray-50">

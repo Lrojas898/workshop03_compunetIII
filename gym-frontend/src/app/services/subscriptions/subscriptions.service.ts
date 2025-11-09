@@ -126,6 +126,36 @@ const subscriptionsService = {
     );
     return response.data;
   },
+
+  // ==================== CLIENT HELPERS ====================
+
+  /**
+   * Helper para clientes: Crear suscripción basada en membresías seleccionadas
+   * Calcula automáticamente los valores agregados de las membresías
+   */
+  createFromMemberships: async (membershipIds: string[], memberships: any[]) => {
+    // Calcular valores agregados
+    const selectedMemberships = memberships.filter(m => membershipIds.includes(m.id));
+
+    const totalCost = selectedMemberships.reduce((sum, m) => sum + m.cost, 0);
+    const totalClasses = selectedMemberships.reduce((sum, m) => sum + m.max_classes_per_month, 0);
+    const totalGym = selectedMemberships.reduce((sum, m) => sum + m.max_gym_visits_per_month, 0);
+    const maxDuration = Math.max(...selectedMemberships.map(m => m.duration_months));
+
+    const names = selectedMemberships.map(m => m.name).join(' + ');
+
+    const dto: CreateSubscriptionDto = {
+      name: names || 'Suscripción personalizada',
+      cost: totalCost,
+      max_classes_assistance: totalClasses,
+      max_gym_assistance: totalGym,
+      duration_months: maxDuration,
+      purchase_date: new Date().toISOString(),
+      membershipIds
+    };
+
+    return subscriptionsService.create(dto);
+  },
 };
 
 export default subscriptionsService;
