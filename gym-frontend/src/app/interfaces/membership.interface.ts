@@ -8,7 +8,7 @@ export interface Membership {
   id: string
   name: string
   cost: number
-  isActive: boolean
+  status: boolean
   max_classes_assistance: number
   max_gym_assistance: number
   duration_months: number

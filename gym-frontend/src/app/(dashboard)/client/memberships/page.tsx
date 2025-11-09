@@ -41,7 +41,7 @@ export default function MembershipsPage() {
     try {
       const data = await membershipsService.getAll()
       // Filtrar solo membresías activas
-      const activeMemberships = data.filter(m => m.isActive)
+      const activeMemberships = data.filter(m => m.status)
       setMemberships(activeMemberships)
     } catch (err: any) {
       console.error('Error loading memberships:', err)
