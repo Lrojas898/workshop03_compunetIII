@@ -272,12 +272,30 @@ export default function MyAttendancePage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {formatTime(attendance.entranceDatetime)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {attendance.exitDatetime ? formatTime(attendance.exitDatetime) : '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {calculateDuration(attendance.entranceDatetime, attendance.exitDatetime)}
-                        </td>
+                        {/* Solo mostrar salida si no es clase */}
+                        {attendance.type === 'gym' ? (
+                          <>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {attendance.exitDatetime ? formatTime(attendance.exitDatetime) : '-'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {calculateDuration(attendance.entranceDatetime, attendance.exitDatetime)}
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400 italic">
+                              {/* No mostrar salida para clases */}
+                              No aplica para clases
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {/* Mostrar duración definida por el coach para la clase */}
+                              {attendance.class && attendance.class.duration_minutes
+                                ? `${attendance.class.duration_minutes} min`
+                                : '-'}
+                            </td>
+                          </>
+                        )}
                       </tr>
                     ))}
                   </tbody>
