@@ -1,12 +1,14 @@
 /**
  * USER DETAIL PAGE
  *
- * Página de detalle y edición de un usuario específico.
+ * Página de detalles de un usuario específico.
+ * Permite ver información detallada del usuario y gestionar sus roles.
  *
  * Características:
- * - Información completa del usuario
- * - Formulario de edición
- * - Navegación de regreso
+ * - Ver información del usuario
+ * - Gestionar roles del usuario
+ * - Ver estado activo/inactivo
+ * - Volver a lista de usuarios
  * - Solo accesible para rol ADMIN
  */
 
@@ -14,77 +16,88 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Mail, User as UserIcon, Calendar, Shield } from 'lucide-react'
-import { Button } from '@/app/components/ui/Button'
+import { ArrowLeft, Shield, AlertCircle } from 'lucide-react'
 import authenticationService from '@/app/services/auth/authentication.service'
 import type { User } from '@/app/interfaces/auth.interface'
+import { RolesBadge } from '@/app/components/features/users/RolesBadge'
+import { RoleManagementModal } from '@/app/components/features/users/RoleManagementModal'
 
 interface UserDetailPageProps {
-  params: Promise<{
+  params: {
     id: string
-  }>
+  }
 }
 
 export default function UserDetailPage({ params }: UserDetailPageProps) {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
+  const [allUsers, setAllUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
-  const [userId, setUserId] = useState<string | null>(null)
+  const [error, setError] = useState('')
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false)
 
   useEffect(() => {
-    // Unwrap params promise
-    params.then((p) => {
-      setUserId(p.id)
-    })
-  }, [params])
+    fetchUserAndAllUsers()
+  }, [params.id])
 
-  useEffect(() => {
-    if (userId) {
-      loadUser()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId])
-
-  const loadUser = async () => {
-    if (!userId) return
-
+  const fetchUserAndAllUsers = async () => {
     try {
       setLoading(true)
-      const data = await authenticationService.getUserById(userId)
-      setUser(data)
-    } catch (error: any) {
-      console.error('Error loading user:', error)
-      const errorMessage = error.response?.data?.message || error.message || 'Error loading user'
+      setError('')
 
-      // Check if it's a 401 (unauthorized) - token might have expired
-      if (error.response?.status === 401) {
-        alert('Session expired. Please login again.')
-        router.push('/login')
-        return
-      }
+      // Fetch specific user
+      const userData = await authenticationService.getUser(params.id)
+      setUser(userData)
 
-      alert(`Error loading user: ${errorMessage}`)
+      // Fetch all users for last admin validation
+      const usersData = await authenticationService.getAllUsers()
+      setAllUsers(usersData)
+    } catch (err) {
+      console.error('Error loading user:', err)
+      setError('Error al cargar los datos del usuario')
     } finally {
       setLoading(false)
     }
   }
 
+  const handleRolesUpdated = (updatedUser: User) => {
+    setUser(updatedUser)
+    setIsRoleModalOpen(false)
+  }
+
+  const handleGoBack = () => {
+    router.back()
+  }
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      <div className="p-6">
+        <button
+          onClick={handleGoBack}
+          className="mb-6 flex items-center gap-2 text-blue-600 hover:text-blue-800 transition"
+        >
+          <ArrowLeft size={20} />
+          Volver
+        </button>
+        <div className="text-center text-gray-500">
+          Cargando usuario...
+        </div>
       </div>
     )
   }
 
-  if (!user) {
+  if (error || !user) {
     return (
       <div className="p-6">
-        <div className="text-center py-12">
-          <p className="text-gray-500">User not found</p>
-          <Button onClick={() => router.push('/admin/users')} variant="secondary" className="mt-4">
-            Back to Users
-          </Button>
+        <button
+          onClick={handleGoBack}
+          className="mb-6 flex items-center gap-2 text-blue-600 hover:text-blue-800 transition"
+        >
+          <ArrowLeft size={20} />
+          Volver
+        </button>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          {error || 'Usuario no encontrado'}
         </div>
       </div>
     )
@@ -92,94 +105,134 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
 
   return (
     <div className="p-6">
+      {/* Back Button */}
+      <button
+        onClick={handleGoBack}
+        className="mb-6 flex items-center gap-2 text-blue-600 hover:text-blue-800 transition"
+      >
+        <ArrowLeft size={20} />
+        Volver
+      </button>
+
+      {/* Header */}
       <div className="mb-6">
-        <Button
-          onClick={() => router.push('/admin/users')}
-          variant="ghost"
-          size="sm"
-        >
-          <ArrowLeft size={16} />
-          Back to Users
-        </Button>
+        <h1 className="text-3xl font-bold text-gray-900">{user.fullName}</h1>
+        <p className="text-gray-600 mt-1">Detalles del usuario</p>
       </div>
 
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900">User Details</h1>
-        </div>
+      {/* Main Content */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* User Information Card */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Información Personal</h2>
 
-        <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex items-start gap-3">
-              <div className="mt-1">
-                <UserIcon size={20} className="text-gray-400" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Full Name</p>
-                <p className="mt-1 text-lg text-gray-900">{user.fullName}</p>
-              </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700">ID del Usuario</label>
+              <p className="text-gray-900 mt-1 font-mono text-sm break-all">{user.id}</p>
             </div>
 
-            <div className="flex items-start gap-3">
-              <div className="mt-1">
-                <Mail size={20} className="text-gray-400" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Email</p>
-                <p className="mt-1 text-lg text-gray-900">{user.email}</p>
-              </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Nombre Completo</label>
+              <p className="text-gray-900 mt-1">{user.fullName}</p>
             </div>
 
-            <div className="flex items-start gap-3">
-              <div className="mt-1">
-                <Calendar size={20} className="text-gray-400" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Age</p>
-                <p className="mt-1 text-lg text-gray-900">{user.age} years</p>
-              </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Email</label>
+              <p className="text-gray-900 mt-1">{user.email}</p>
             </div>
 
-            <div className="flex items-start gap-3">
-              <div className="mt-1">
-                <Shield size={20} className="text-gray-400" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Role</p>
-                <div className="mt-1">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                    {user.roles[0]?.name || 'N/A'}
-                  </span>
-                </div>
-              </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Edad</label>
+              <p className="text-gray-900 mt-1">{user.age} años</p>
             </div>
 
-            <div className="flex items-start gap-3">
-              <div className="mt-1">
-                <div className="w-5 h-5 rounded-full flex items-center justify-center bg-gray-100">
-                  <div className={`w-2 h-2 rounded-full ${user.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
-                </div>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Status</p>
-                <p className="mt-1 text-lg text-gray-900">
-                  {user.isActive ? 'Active' : 'Inactive'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="mt-1">
-                <UserIcon size={20} className="text-gray-400" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">User ID</p>
-                <p className="mt-1 text-sm text-gray-600 font-mono">{user.id}</p>
-              </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Estado</label>
+              <p className="mt-1">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  user.isActive
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {user.isActive ? 'Activo' : 'Inactivo'}
+                </span>
+              </p>
             </div>
           </div>
         </div>
+
+        {/* Roles Card */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-900">Roles Asignados</h2>
+            <button
+              onClick={() => setIsRoleModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition"
+              title="Gestionar roles"
+            >
+              <Shield size={18} />
+              Gestionar
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {user.roles.length > 0 ? (
+              <>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Roles Actuales</label>
+                  <RolesBadge roles={user.roles} />
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-sm text-blue-800">
+                    <strong>Total:</strong> {user.roles.length} {user.roles.length === 1 ? 'rol' : 'roles'}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
+                <AlertCircle size={18} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-yellow-800">
+                  Este usuario no tiene roles asignados. Asigna al menos el rol de cliente.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Account Info Card */}
+      <div className="bg-white rounded-lg shadow p-6 mt-6">
+        <h2 className="text-lg font-bold text-gray-900 mb-4">Información de Cuenta</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="text-sm font-medium text-gray-700">Fecha de Creación</label>
+            <p className="text-gray-900 mt-1">
+              {user.createdAt ? new Date(user.createdAt).toLocaleDateString('es-ES') : 'No disponible'}
+            </p>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700">Última Actualización</label>
+            <p className="text-gray-900 mt-1">
+              {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString('es-ES') : 'No disponible'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Role Management Modal */}
+      {user && (
+        <RoleManagementModal
+          user={user}
+          isOpen={isRoleModalOpen}
+          onClose={() => setIsRoleModalOpen(false)}
+          onRolesUpdated={handleRolesUpdated}
+          allUsers={allUsers}
+        />
+      )}
     </div>
   )
 }

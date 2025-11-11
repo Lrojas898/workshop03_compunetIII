@@ -66,6 +66,13 @@ const authenticationService = {
   },
 
   /**
+   * Alias para getUserById - Obtiene un usuario específico por ID
+   */
+  getUser: async (userId: string) => {
+    return authenticationService.getUserById(userId);
+  },
+
+  /**
    * PATCH /auth/:id
    * Actualiza un usuario existente
    */
@@ -84,6 +91,43 @@ const authenticationService = {
   deleteUser: async (userId: string) => {
     const response = await apiService.delete<User>(
       `${API_CONFIG.ENDPOINTS.AUTH}/${userId}`
+    );
+    return response.data;
+  },
+
+  /**
+   * PATCH /auth/:id/roles/assign
+   * Reemplaza TODOS los roles del usuario con los nuevos roles proporcionados
+   */
+  assignRoles: async (userId: string, roles: ValidRoles[]) => {
+    const response = await apiService.patch<User>(
+      `${API_CONFIG.ENDPOINTS.AUTH}/${userId}/roles/assign`,
+      { roles }
+    );
+    return response.data;
+  },
+
+  /**
+   * PATCH /auth/:id/roles/add
+   * Agrega uno o más roles al usuario SIN remover sus roles actuales
+   */
+  addRoles: async (userId: string, roles: ValidRoles[]) => {
+    const response = await apiService.patch<User>(
+      `${API_CONFIG.ENDPOINTS.AUTH}/${userId}/roles/add`,
+      { roles }
+    );
+    return response.data;
+  },
+
+  /**
+   * PATCH /auth/:id/roles/remove
+   * Elimina uno o más roles del usuario
+   * Si queda sin roles, se asigna automáticamente el rol "client"
+   */
+  removeRoles: async (userId: string, roles: ValidRoles[]) => {
+    const response = await apiService.patch<User>(
+      `${API_CONFIG.ENDPOINTS.AUTH}/${userId}/roles/remove`,
+      { roles }
     );
     return response.data;
   },
