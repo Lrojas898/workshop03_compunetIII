@@ -14,7 +14,7 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Shield, AlertCircle } from 'lucide-react'
 import authenticationService from '@/app/services/auth/authentication.service'
@@ -23,13 +23,14 @@ import { RolesBadge } from '@/app/components/features/users/RolesBadge'
 import { RoleManagementModal } from '@/app/components/features/users/RoleManagementModal'
 
 interface UserDetailPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default function UserDetailPage({ params }: UserDetailPageProps) {
   const router = useRouter()
+  const resolvedParams = use(params)
   const [user, setUser] = useState<User | null>(null)
   const [allUsers, setAllUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,7 +39,8 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
 
   useEffect(() => {
     fetchUserAndAllUsers()
-  }, [params.id])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolvedParams.id])
 
   const fetchUserAndAllUsers = async () => {
     try {
@@ -46,15 +48,17 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
       setError('')
 
       // Fetch specific user
-      const userData = await authenticationService.getUser(params.id)
+      const userData = await authenticationService.getUserById(resolvedParams.id)
       setUser(userData)
 
       // Fetch all users for last admin validation
       const usersData = await authenticationService.getAllUsers()
       setAllUsers(usersData)
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error loading user:', err)
-      setError('Error al cargar los datos del usuario')
+      const error = err as { response?: { data?: { message?: string } } }
+      console.error('Error response:', error.response)
+      setError(error.response?.data?.message || 'Error al cargar los datos del usuario')
     } finally {
       setLoading(false)
     }

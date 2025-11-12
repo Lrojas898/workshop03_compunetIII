@@ -20,6 +20,8 @@ export interface User {
   age: number
   isActive: boolean
   roles: Role[]
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface AuthResponse extends User {
