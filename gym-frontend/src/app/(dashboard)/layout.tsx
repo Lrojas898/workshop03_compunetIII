@@ -16,7 +16,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, CreditCard, FileText, TrendingUp, UserCheck, ShoppingBag, Calendar, ClipboardList, UserCircle, LogOut, ChevronDown } from 'lucide-react'
+import { LayoutDashboard, Users, CreditCard, FileText, UserCheck, ShoppingBag, Calendar, ClipboardList, UserCircle, LogOut, ChevronDown } from 'lucide-react'
 import { Modal } from '@/app/components/ui/Modal'
 import { EditProfileForm } from '@/app/components/features/users/EditProfileForm'
 import authenticationService from '@/app/services/auth/authentication.service'
@@ -119,7 +119,6 @@ export default function DashboardLayout({
     { href: '/admin/subscriptions', label: 'Suscripciones', icon: FileText },
     { href: '/admin/attendances', label: 'Asistencias', icon: ClipboardList },
     { href: '/admin/classes', label: 'Gestión de Clases', icon: Calendar },
-    { href: '/admin/analytics', label: 'Analítica', icon: TrendingUp },
   ]
 
   const coachNavItems = [

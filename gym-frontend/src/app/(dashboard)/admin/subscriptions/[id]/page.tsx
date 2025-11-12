@@ -18,8 +18,7 @@ import { ArrowLeft, Calendar, DollarSign, User as UserIcon, Mail, CreditCard, Pa
 import { Button } from '@/app/components/ui/Button'
 import { Table } from '@/app/components/ui/Table'
 import subscriptionsService from '@/app/services/subscriptions/subscriptions.service'
-import type { Subscription } from '@/app/interfaces/subscriptions.interface'
-import type { Membership } from '@/app/interfaces/membership.interface'
+import type { Subscription, SubscriptionItem } from '@/app/interfaces/subscriptions.interface'
 
 interface SubscriptionDetailPageProps {
   params: Promise<{
@@ -52,6 +51,7 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
     try {
       setLoading(true)
       const data = await subscriptionsService.getById(subscriptionId)
+      console.log('Subscription loaded:', data)
       setSubscription(data)
     } catch (error: any) {
       console.error('Error loading subscription:', error)
@@ -64,6 +64,12 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
     } finally {
       setLoading(false)
     }
+  }
+
+  // Obtener el item activo
+  const getActiveItem = () => {
+    if (!subscription) return null
+    return subscription.items?.find(item => item.status === 'active') || null
   }
 
   if (loading) {
@@ -87,7 +93,7 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
     )
   }
 
-  const membershipsColumns = [
+  const itemsColumns = [
     {
       key: 'name',
       header: 'Membership Name'
@@ -95,13 +101,13 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
     {
       key: 'cost',
       header: 'Cost',
-      render: (membership: Membership) => `$${parseFloat(membership.cost).toFixed(2)}`
+      render: (item: SubscriptionItem) => `$${Number(item.cost).toFixed(2)}`
     },
     {
       key: 'duration_months',
       header: 'Duration',
-      render: (membership: Membership) => (
-        membership.duration_months === 1 ? '1 Month' : `${membership.duration_months} Months`
+      render: (item: SubscriptionItem) => (
+        item.duration_months === 1 ? '1 Month' : `${item.duration_months} Months`
       )
     },
     {
@@ -113,15 +119,33 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
       header: 'Max Gym Visits'
     },
     {
+      key: 'start_date',
+      header: 'Start Date',
+      render: (item: SubscriptionItem) => new Date(item.start_date).toLocaleDateString()
+    },
+    {
+      key: 'end_date',
+      header: 'End Date',
+      render: (item: SubscriptionItem) => new Date(item.end_date).toLocaleDateString()
+    },
+    {
       key: 'status',
       header: 'Status',
-      render: (membership: Membership) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          membership.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        }`}>
-          {membership.status ? 'Active' : 'Inactive'}
-        </span>
-      )
+      render: (item: SubscriptionItem) => {
+        const statusColors: Record<string, string> = {
+          active: 'bg-green-100 text-green-800',
+          pending: 'bg-yellow-100 text-yellow-800',
+          expired: 'bg-gray-100 text-gray-800',
+          cancelled: 'bg-red-100 text-red-800'
+        }
+        return (
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            statusColors[item.status] || 'bg-gray-100 text-gray-800'
+          }`}>
+            {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+          </span>
+        )
+      }
     }
   ]
 
@@ -156,8 +180,8 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
                 <Package size={20} className="text-gray-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Subscription Name</p>
-                <p className="mt-1 text-lg text-gray-900">{subscription.name || 'N/A'}</p>
+                <p className="text-sm font-medium text-gray-500">Membership Name</p>
+                <p className="mt-1 text-lg text-gray-900">{getActiveItem()?.name || 'N/A'}</p>
               </div>
             </div>
 
@@ -167,7 +191,9 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Cost</p>
-                <p className="mt-1 text-lg text-gray-900">${subscription.cost?.toFixed(2) || '0.00'}</p>
+                <p className="mt-1 text-lg text-gray-900">
+                  ${getActiveItem() ? Number(getActiveItem()!.cost).toFixed(2) : '0.00'}
+                </p>
               </div>
             </div>
 
@@ -178,8 +204,8 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
               <div>
                 <p className="text-sm font-medium text-gray-500">Duration</p>
                 <p className="mt-1 text-lg text-gray-900">
-                  {subscription.duration_months ?
-                    (subscription.duration_months === 1 ? '1 Month' : `${subscription.duration_months} Months`) :
+                  {getActiveItem()?.duration_months ?
+                    (getActiveItem()!.duration_months === 1 ? '1 Month' : `${getActiveItem()!.duration_months} Months`) :
                     'N/A'}
                 </p>
               </div>
@@ -192,7 +218,7 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
               <div>
                 <p className="text-sm font-medium text-gray-500">Purchase Date</p>
                 <p className="mt-1 text-lg text-gray-900">
-                  {subscription.purchase_date ? new Date(subscription.purchase_date).toLocaleDateString() : 'N/A'}
+                  {getActiveItem()?.purchase_date ? new Date(getActiveItem()!.purchase_date).toLocaleDateString() : 'N/A'}
                 </p>
               </div>
             </div>
@@ -203,7 +229,7 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Max Classes</p>
-                <p className="mt-1 text-lg text-gray-900">{subscription.max_classes_assistance || 0} classes</p>
+                <p className="mt-1 text-lg text-gray-900">{getActiveItem()?.max_classes_assistance || 0} classes</p>
               </div>
             </div>
 
@@ -213,7 +239,7 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Max Gym Visits</p>
-                <p className="mt-1 text-lg text-gray-900">{subscription.max_gym_assistance || 0} visits</p>
+                <p className="mt-1 text-lg text-gray-900">{getActiveItem()?.max_gym_assistance || 0} visits</p>
               </div>
             </div>
           </div>
@@ -275,21 +301,21 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
 
       <div className="mt-6 bg-white rounded-lg shadow">
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Included Memberships</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Subscription Items</h2>
           <p className="text-gray-600 mt-1">
-            {subscription.memberships?.length || 0} {subscription.memberships?.length === 1 ? 'membership' : 'memberships'}
+            {subscription.items?.length || 0} {subscription.items?.length === 1 ? 'item' : 'items'}
           </p>
         </div>
         <div className="p-6">
-          {subscription.memberships && subscription.memberships.length > 0 ? (
+          {subscription.items && subscription.items.length > 0 ? (
             <Table
-              data={subscription.memberships}
-              columns={membershipsColumns}
-              emptyMessage="No memberships assigned"
+              data={subscription.items}
+              columns={itemsColumns}
+              emptyMessage="No items found"
             />
           ) : (
             <div className="text-center py-8 text-gray-500">
-              No memberships assigned to this subscription
+              No items in this subscription
             </div>
           )}
         </div>

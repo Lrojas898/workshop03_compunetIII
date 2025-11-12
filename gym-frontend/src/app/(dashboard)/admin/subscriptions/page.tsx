@@ -62,6 +62,10 @@ export default function SubscriptionsManagementPage() {
     router.push(`/admin/subscriptions/${id}`)
   }
 
+  const getActiveItem = (subscription: Subscription) => {
+    return subscription.items?.find(item => item.status === 'active') || null
+  }
+
   const columns = [
     {
       key: 'user',
@@ -79,42 +83,53 @@ export default function SubscriptionsManagementPage() {
     {
       key: 'name',
       header: 'Subscription Name',
-      render: (subscription: Subscription) => subscription.name || 'N/A'
+      render: (subscription: Subscription) => {
+        const activeItem = getActiveItem(subscription)
+        return activeItem?.name || 'N/A'
+      }
     },
     {
       key: 'cost',
       header: 'Cost',
-      render: (subscription: Subscription) => `$${subscription.cost?.toFixed(2) || '0.00'}`
+      render: (subscription: Subscription) => {
+        const activeItem = getActiveItem(subscription)
+        return activeItem ? `$${Number(activeItem.cost).toFixed(2)}` : '$0.00'
+      }
     },
     {
       key: 'duration_months',
       header: 'Duration',
-      render: (subscription: Subscription) => (
-        <span>
-          {subscription.duration_months ?
-            (subscription.duration_months === 1 ? '1 Month' : `${subscription.duration_months} Months`) :
-            'N/A'}
-        </span>
-      )
+      render: (subscription: Subscription) => {
+        const activeItem = getActiveItem(subscription)
+        return activeItem?.duration_months ?
+          (activeItem.duration_months === 1 ? '1 Month' : `${activeItem.duration_months} Months`) :
+          'N/A'
+      }
     },
     {
       key: 'memberships',
       header: 'Memberships',
-      render: (subscription: Subscription) => (
-        <span className="text-gray-900">
-          {subscription.memberships?.length || 0} {subscription.memberships?.length === 1 ? 'membership' : 'memberships'}
-        </span>
-      )
+      render: (subscription: Subscription) => {
+        const itemsCount = subscription.items?.length || 0
+        return (
+          <span className="text-gray-900">
+            {itemsCount} {itemsCount === 1 ? 'membership' : 'memberships'}
+          </span>
+        )
+      }
     },
     {
       key: 'purchase_date',
       header: 'Purchase Date',
-      render: (subscription: Subscription) => (
-        <div className="flex items-center gap-1">
-          <Calendar size={14} className="text-gray-400" />
-          <span>{subscription.purchase_date ? new Date(subscription.purchase_date).toLocaleDateString() : 'N/A'}</span>
-        </div>
-      )
+      render: (subscription: Subscription) => {
+        const activeItem = getActiveItem(subscription)
+        return (
+          <div className="flex items-center gap-1">
+            <Calendar size={14} className="text-gray-400" />
+            <span>{activeItem?.purchase_date ? new Date(activeItem.purchase_date).toLocaleDateString() : 'N/A'}</span>
+          </div>
+        )
+      }
     },
     {
       key: 'isActive',
