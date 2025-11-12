@@ -142,11 +142,22 @@ const attendancesService = {
      * Obtiene la lista de asistentes de una clase
      */
     getClassAttendees: async (classId: string) => {
-      const attendees = await apiService.get<ClassAttendance[]>(
-        `/attendances/class/${classId}/attendees`
-      );
-      return attendees;
-    },
+    const attendees = await apiService.get<ClassAttendance[]>(
+      `/attendances/class/${classId}/attendees`
+    );
+    return attendees;
+  },
+
+  /**
+   * GET /attendances
+   * Obtiene todas las asistencias del sistema (solo admin)
+   */
+  getAll: async () => {
+    const attendances = await apiService.get<Attendance[]>(
+      API_CONFIG.ENDPOINTS.ATTENDANCES
+    );
+    return attendances;
+  },
 };
 
 export default attendancesService;
