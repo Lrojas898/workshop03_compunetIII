@@ -1,15 +1,3 @@
-/**
- * LOGIN PAGE
- *
- * Página de inicio de sesión para usuarios del gimnasio.
- * Permite a los usuarios autenticarse usando email y contraseña.
- *
- * Características:
- * - Formulario de login con validación
- * - Manejo de errores de autenticación
- * - Redirección según el rol del usuario
- */
-
 import { LoginForm } from '@/app/components/features/authentication/LoginForm'
 
 export const metadata = {

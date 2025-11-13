@@ -1,49 +1,35 @@
-/**
- * LOGIN FORM
- *
- * Formulario de inicio de sesión.
- *
- * Características:
- * - Campos de email y password
- * - Validación básica
- * - Manejo de errores
- * - Remember me checkbox
- * - Link a registro
- */
-
 'use client'
-
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import authenticationService from '@/app/services/auth/authentication.service'
+import { useAuthStore } from '@/app/_store/auth/auth.store'
 
 export function LoginForm() {
   const router = useRouter()
+  const { login } = useAuthStore()
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [rememberMe, setRememberMe] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // nota: zustand de por si ya persiste la sesion, por eso borre el remember me
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
-    // Validaciones básicas
     if (!email || !password) {
       setError('Por favor completa todos los campos')
       setLoading(false)
       return
     }
-
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError('Por favor ingresa un email válido')
       setLoading(false)
       return
     }
-
     if (password.length < 6) {
       setError('La contraseña debe tener al menos 6 caracteres')
       setLoading(false)
@@ -56,20 +42,9 @@ export function LoginForm() {
         password,
       })
 
-      // Guardar token y datos de usuario en localStorage
-      localStorage.setItem('authToken', response.token)
-      localStorage.setItem('userData', JSON.stringify({
-        id: response.id,
-        email: response.email,
-        fullName: response.fullName,
-        roles: response.roles,
-        isActive: response.isActive
-      }))
-      if (rememberMe) {
-        localStorage.setItem('rememberMe', 'true')
-      }
+      // Aqui esta la magia muchachos
+      login(response)
 
-      // Redirigir según rol del usuario
       const userRole = response.roles[0]?.name
       switch (userRole) {
         case 'admin':
@@ -85,7 +60,8 @@ export function LoginForm() {
           router.push('/client')
           break
         default:
-          router.push('/admin')
+          // todo: implementar esta pagina
+          router.push('/403') 
       }
     } catch (err: any) {
       const message = err.response?.data?.message || 'Error al iniciar sesión. Intenta de nuevo.'
@@ -137,20 +113,6 @@ export function LoginForm() {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             disabled={loading}
           />
-        </div>
-
-        <div className="flex items-center">
-          <input
-            id="rememberMe"
-            type="checkbox"
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-            className="rounded"
-            disabled={loading}
-          />
-          <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-600">
-            Recuérdame
-          </label>
         </div>
 
         <button
