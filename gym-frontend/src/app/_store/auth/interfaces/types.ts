@@ -1,7 +1,8 @@
+import { ValidRoles } from "@/lib/configuration/api-endpoints";
 
 export interface Role {
   id: string;
-  name: 'admin' | 'coach' | 'client' | 'receptionist'; 
+  name: ValidRoles; 
 }
 
 export interface User {
@@ -35,4 +36,5 @@ export interface AuthState {
 export interface AuthActions {
   login: (data: LoginResponse) => void; 
   logout: () => void;
+  updateUser: (data: Partial<User>) => void;
 }

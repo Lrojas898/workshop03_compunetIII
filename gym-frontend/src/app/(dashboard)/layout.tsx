@@ -22,7 +22,8 @@ import { EditProfileForm } from '@/app/components/features/users/EditProfileForm
 import authenticationService from '@/app/services/auth/authentication.service'
 import type { User, UpdateUserDto } from '@/app/interfaces/auth.interface'
 import { AddRoleHelper } from '@/app/components/dev/AddRoleHelper'
-import { ValidRoles } from '@/app/interfaces/valid-roles.enum'
+import { ValidRoles } from '@/lib/configuration/api-endpoints'
+import { useAuthStore } from '../_store/auth/auth.store'
 
 export default function DashboardLayout({
   children,
@@ -30,28 +31,22 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
-  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const { isAuthenticated, user, logout, updateUser } = useAuthStore()
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false)
+  const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
-    // Cargar datos del usuario desde localStorage
-    const userDataStr = localStorage.getItem('userData')
-    if (userDataStr) {
-      try {
-        const userData = JSON.parse(userDataStr)
-        console.log('=== DEBUG: Usuario cargado ===')
-        console.log('Datos completos:', userData)
-        console.log('Roles del usuario:', userData.roles)
-        console.log('Nombres de roles:', userData.roles?.map((r: any) => r.name))
-        setCurrentUser(userData)
-      } catch (error) {
-        console.error('Error parsing user data:', error)
-      }
-    }
+    setIsHydrated(true)
   }, [])
 
-  // Cerrar el menú cuando se hace click fuera
+  useEffect(() => {
+    if (isHydrated && !isAuthenticated) {
+      router.replace('/login')
+    }
+  }, [router, isHydrated, isAuthenticated])
+
+    // Cerrar el menú cuando se hace click fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (isProfileMenuOpen) {
@@ -66,49 +61,48 @@ export default function DashboardLayout({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isProfileMenuOpen])
 
+  
   const handleLogout = () => {
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('userData')
-    localStorage.removeItem('rememberMe')
-    router.push('/login')
+    logout()
   }
 
-  const handleEditProfile = async (data: UpdateUserDto) => {
-    if (!currentUser) return
+    const handleEditProfile = async (data: UpdateUserDto) => {
+    if (!user) return
     try {
-      const updatedUser = await authenticationService.updateUser(currentUser.id, data)
-      // Actualizar el usuario en localStorage
-      const updatedUserData = {
-        ...currentUser,
-        ...data
-      }
-      localStorage.setItem('userData', JSON.stringify(updatedUserData))
-      setCurrentUser(updatedUserData)
+      await authenticationService.updateUser(user.id, data)
+      updateUser(data)
       setIsEditProfileModalOpen(false)
-      // Recargar la página para reflejar los cambios
-      window.location.reload()
     } catch (error: any) {
       throw error
     }
   }
 
+  if (!isHydrated || !isAuthenticated || !user) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <p className="text-gray-600">Cargando aplicación...</p>
+      </div>
+    )
+  }
+
+
   // Obtener todos los roles del usuario
-  const userRoles: ValidRoles[] = currentUser?.roles?.map(role => role.name) || [];
+  const userRoles: ValidRoles[] = user?.roles?.map(role => role.name) || [];
   const hasRole = (role: ValidRoles) => userRoles.includes(role)
 
   // Debug: Mostrar roles en consola
   console.log('=== DEBUG: Roles detectados ===')
   console.log('Todos los roles:', userRoles)
-  console.log('Tiene admin?', hasRole('admin'))
-  console.log('Tiene coach?', hasRole('coach'))
-  console.log('Tiene receptionist?', hasRole('receptionist'))
-  console.log('Tiene client?', hasRole('client'))
+  console.log('Tiene admin?', hasRole(ValidRoles.ADMIN))
+  console.log('Tiene coach?', hasRole(ValidRoles.COACH))
+  console.log('Tiene receptionist?', hasRole(ValidRoles.RECEPTIONIST))
+  console.log('Tiene client?', hasRole(ValidRoles.CLIENT))
 
   // Determinar el rol principal para el label (prioridad: admin > coach > receptionist > client)
   const primaryRole =
-    hasRole('admin') ? 'admin' :
-    hasRole('coach') ? 'coach' :
-    hasRole('receptionist') ? 'receptionist' :
+    hasRole(ValidRoles.ADMIN) ? 'admin' :
+    hasRole(ValidRoles.COACH) ? 'coach' :
+    hasRole(ValidRoles.RECEPTIONIST) ? 'receptionist' :
     'client'
 
   // Definir navegación por rol
@@ -141,10 +135,10 @@ export default function DashboardLayout({
 
   // Combinar navegación de todos los roles del usuario
   const navItems = [
-    ...(hasRole('admin') ? adminNavItems : []),
-    ...(hasRole('coach') ? coachNavItems : []),
-    ...(hasRole('receptionist') ? receptionistNavItems : []),
-    ...(hasRole('client') ? clientNavItems : []),
+    ...(hasRole(ValidRoles.ADMIN) ? adminNavItems : []),
+    ...(hasRole(ValidRoles.COACH) ? coachNavItems : []),
+    ...(hasRole(ValidRoles.RECEPTIONIST) ? receptionistNavItems : []),
+    ...(hasRole(ValidRoles.CLIENT) ? clientNavItems : []),
   ]
 
   const sidebarTitle = 'Gym Manager'
@@ -162,6 +156,14 @@ export default function DashboardLayout({
       }).join(', ')
     : 'Sin rol';
 
+      if (!isAuthenticated || !user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p>Cargando...</p> {/* O un componente de Spinner/Loader */}
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Navigation Bar */}
@@ -176,7 +178,7 @@ export default function DashboardLayout({
               className="flex items-center space-x-3 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition"
             >
               <div className="text-right">
-                <p className="font-medium">{currentUser?.fullName || userRoleLabel}</p>
+                <p className="font-medium">{user?.fullName || userRoleLabel}</p>
                 <p className="text-xs text-gray-500">{userRoleLabel}</p>
               </div>
               <ChevronDown size={16} className={`transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
@@ -236,7 +238,7 @@ export default function DashboardLayout({
             </div>
 
             {/* Admin Section */}
-            {hasRole('admin') && (
+            {hasRole(ValidRoles.ADMIN) && (
               <>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-4">
                   Administración
@@ -254,14 +256,14 @@ export default function DashboardLayout({
                     </Link>
                   )
                 })}
-                {(hasRole('coach') || hasRole('receptionist') || hasRole('client')) && (
+                {(hasRole(ValidRoles.COACH) || hasRole(ValidRoles.RECEPTIONIST) || hasRole(ValidRoles.CLIENT)) && (
                   <div className="border-t border-gray-700 my-4" />
                 )}
               </>
             )}
 
             {/* Coach Section */}
-            {hasRole('coach') && (
+            {hasRole(ValidRoles.COACH) && (
               <>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-4">
                   Coach
@@ -279,14 +281,14 @@ export default function DashboardLayout({
                     </Link>
                   )
                 })}
-                {(hasRole('receptionist') || hasRole('client')) && (
+                {(hasRole(ValidRoles.RECEPTIONIST) || hasRole(ValidRoles.CLIENT)) && (
                   <div className="border-t border-gray-700 my-4" />
                 )}
               </>
             )}
 
             {/* Receptionist Section */}
-            {hasRole('receptionist') && (
+            {hasRole(ValidRoles.RECEPTIONIST) && (
               <>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-4">
                   Recepción
@@ -304,14 +306,14 @@ export default function DashboardLayout({
                     </Link>
                   )
                 })}
-                {hasRole('client') && (
+                {hasRole(ValidRoles.CLIENT) && (
                   <div className="border-t border-gray-700 my-4" />
                 )}
               </>
             )}
 
             {/* Client Section */}
-            {hasRole('client') && (
+            {hasRole(ValidRoles.CLIENT) && (
               <>
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-4">
                   Mi Cuenta
@@ -341,7 +343,7 @@ export default function DashboardLayout({
       </div>
 
       {/* Modal de Edición de Perfil */}
-      {currentUser && (
+      {user && (
         <Modal
           isOpen={isEditProfileModalOpen}
           onClose={() => setIsEditProfileModalOpen(false)}
@@ -349,7 +351,7 @@ export default function DashboardLayout({
           size="md"
         >
           <EditProfileForm
-            user={currentUser}
+            user={user}
             onSubmit={handleEditProfile}
             onCancel={() => setIsEditProfileModalOpen(false)}
           />
