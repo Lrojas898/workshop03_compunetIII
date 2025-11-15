@@ -150,31 +150,32 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
   ]
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
+    <div className="p-4 sm:p-6">
+      <div className="mb-4 sm:mb-6">
         <Button
           onClick={() => router.push('/admin/subscriptions')}
           variant="ghost"
           size="sm"
         >
           <ArrowLeft size={16} />
-          Back to Subscriptions
+          <span className="hidden sm:inline">Back to Subscriptions</span>
+          <span className="sm:hidden">Volver</span>
         </Button>
       </div>
 
       <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900">Subscription Details</h1>
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mt-2 ${
+        <div className="p-4 sm:p-6 border-b border-gray-200">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Subscription Details</h1>
+          <span className={`inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium mt-2 ${
             subscription.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
           }`}>
             {subscription.isActive ? 'Active' : 'Inactive'}
           </span>
         </div>
 
-        <div className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Subscription Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Subscription Information</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div className="flex items-start gap-3">
               <div className="mt-1">
                 <Package size={20} className="text-gray-400" />
@@ -247,12 +248,12 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
       </div>
 
       {subscription.user && (
-        <div className="mt-6 bg-white rounded-lg shadow">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">User Information</h2>
+        <div className="mt-4 sm:mt-6 bg-white rounded-lg shadow">
+          <div className="p-4 sm:p-6 border-b border-gray-200">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900">User Information</h2>
           </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div className="flex items-start gap-3">
                 <div className="mt-1">
                   <UserIcon size={20} className="text-gray-400" />
@@ -299,14 +300,14 @@ export default function SubscriptionDetailPage({ params }: SubscriptionDetailPag
         </div>
       )}
 
-      <div className="mt-6 bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Subscription Items</h2>
-          <p className="text-gray-600 mt-1">
+      <div className="mt-4 sm:mt-6 bg-white rounded-lg shadow">
+        <div className="p-4 sm:p-6 border-b border-gray-200">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900">Subscription Items</h2>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
             {subscription.items?.length || 0} {subscription.items?.length === 1 ? 'item' : 'items'}
           </p>
         </div>
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {subscription.items && subscription.items.length > 0 ? (
             <Table
               data={subscription.items}

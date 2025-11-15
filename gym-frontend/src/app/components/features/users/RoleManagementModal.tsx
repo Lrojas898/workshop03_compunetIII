@@ -1,15 +1,13 @@
 /**
  * ROLE MANAGEMENT MODAL
  *
- * Modal para gestionar roles de un usuario con 3 acciones:
- * 1. Reemplazar Roles (ASSIGN) - Reemplaza todos los roles
- * 2. Agregar Roles (ADD) - Agrega nuevos roles sin remover existentes
- * 3. Remover Roles (REMOVE) - Elimina roles seleccionados
+ * Modal para gestionar roles de un usuario.
+ * Los roles seleccionados en los checkboxes serán los nuevos roles del usuario.
  *
  * Características:
  * - Validación para evitar remover el último admin
  * - Checkboxes para seleccionar roles
- * - 3 botones de acción
+ * - Un solo botón de submit para actualizar roles
  * - Manejo de errores y estados de carga
  */
 
@@ -42,11 +40,9 @@ export function RoleManagementModal({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [action, setAction] = useState<'assign' | 'add' | 'remove' | null>(null)
 
   const allAvailableRoles = Object.values(ValidRoles)
 
-  const currentRoles = new Set(user.roles.map((r) => r.name))
   const isLastAdmin =
     allUsers.length > 0 &&
     user.roles.some((r) => r.name === ValidRoles.ADMIN) &&
@@ -59,31 +55,24 @@ export function RoleManagementModal({
     )
   }
 
-  const validateAction = (): boolean => {
-    if (selectedRoles.length === 0) {
-      setError('Debe seleccionar al menos un rol')
-      return false
-    }
-
-    // Validar si intenta remover el último admin
-    if (action === 'remove' || action === 'assign') {
-      const removingAdmin = user.roles.some((r) => r.name === ValidRoles.ADMIN) &&
-        !selectedRoles.includes(ValidRoles.ADMIN)
-
-      if (removingAdmin && isLastAdmin) {
-        setError('No puedes remover el rol admin del único administrador del sistema')
-        return false
-      }
-    }
-
-    return true
-  }
-
-  const handleAssignRoles = async () => {
+  const handleSubmit = async () => {
     setError('')
     setSuccess('')
 
-    if (!validateAction()) return
+    // Validar que haya al menos un rol seleccionado
+    if (selectedRoles.length === 0) {
+      setError('Debe seleccionar al menos un rol')
+      return
+    }
+
+    // Validar si intenta remover el último admin
+    const removingAdmin = user.roles.some((r) => r.name === ValidRoles.ADMIN) &&
+      !selectedRoles.includes(ValidRoles.ADMIN)
+
+    if (removingAdmin && isLastAdmin) {
+      setError('No puedes remover el rol admin del único administrador del sistema')
+      return
+    }
 
     setLoading(true)
     try {
@@ -91,7 +80,7 @@ export function RoleManagementModal({
         user.id,
         selectedRoles as ValidRoles[]
       )
-      setSuccess('Roles reemplazados exitosamente')
+      setSuccess('Roles actualizados exitosamente')
       setTimeout(() => {
         onRolesUpdated(updatedUser)
         onClose()
@@ -104,96 +93,16 @@ export function RoleManagementModal({
     }
   }
 
-  const handleAddRoles = async () => {
-    setError('')
-    setSuccess('')
-
-    if (selectedRoles.length === 0) {
-      setError('Selecciona al menos un rol para agregar')
-      return
-    }
-
-    // Solo agregar los roles que no tiene
-    const rolesToAdd = selectedRoles.filter(
-      (role) => !currentRoles.has(role as ValidRoles)
-    )
-
-    if (rolesToAdd.length === 0) {
-      setError('El usuario ya tiene todos los roles seleccionados')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const updatedUser = await authenticationService.addRoles(
-        user.id,
-        rolesToAdd as ValidRoles[]
-      )
-      setSuccess('Roles agregados exitosamente')
-      setTimeout(() => {
-        onRolesUpdated(updatedUser)
-        onClose()
-      }, 1500)
-    } catch (err: any) {
-      const message = err.response?.data?.message || 'Error al agregar roles'
-      setError(message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleRemoveRoles = async () => {
-    setError('')
-    setSuccess('')
-
-    // Roles a remover = roles actuales que no están en selectedRoles
-    const rolesToRemove = Array.from(currentRoles).filter(
-      (role) => !selectedRoles.includes(role)
-    )
-
-    if (rolesToRemove.length === 0) {
-      setError('Selecciona al menos un rol para remover')
-      return
-    }
-
-    // Validar si intenta remover el último admin
-    if (
-      rolesToRemove.includes(ValidRoles.ADMIN) &&
-      isLastAdmin
-    ) {
-      setError('No puedes remover el rol admin del único administrador del sistema')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const updatedUser = await authenticationService.removeRoles(
-        user.id,
-        rolesToRemove as ValidRoles[]
-      )
-      setSuccess('Roles removidos exitosamente')
-      setTimeout(() => {
-        onRolesUpdated(updatedUser)
-        onClose()
-      }, 1500)
-    } catch (err: any) {
-      const message = err.response?.data?.message || 'Error al remover roles'
-      setError(message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Gestionar Roles</h2>
-            <p className="text-sm text-gray-600">{user.fullName}</p>
+            <h2 className="text-base sm:text-lg font-bold text-gray-900">Gestionar Roles</h2>
+            <p className="text-xs sm:text-sm text-gray-600 truncate max-w-[200px] sm:max-w-none">{user.fullName}</p>
           </div>
           <button
             onClick={onClose}
@@ -205,7 +114,7 @@ export function RoleManagementModal({
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-4">
+        <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
           {/* Current Roles */}
           <div>
             <h3 className="font-medium text-gray-900 mb-2">Roles Actuales:</h3>
@@ -276,43 +185,14 @@ export function RoleManagementModal({
         </div>
 
         {/* Footer - Action Buttons */}
-        <div className="p-6 border-t border-gray-200 space-y-3">
-          {/* Assign Roles Button */}
+        <div className="p-4 sm:p-6 border-t border-gray-200 space-y-2 sm:space-y-3">
+          {/* Submit Roles Button */}
           <button
-            onClick={() => {
-              setAction('assign')
-              handleAssignRoles()
-            }}
+            onClick={handleSubmit}
             disabled={loading}
             className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            {loading && action === 'assign'
-              ? 'Reemplazando...'
-              : 'Reemplazar Todos los Roles'}
-          </button>
-
-          {/* Add Roles Button */}
-          <button
-            onClick={() => {
-              setAction('add')
-              handleAddRoles()
-            }}
-            disabled={loading}
-            className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
-          >
-            {loading && action === 'add' ? 'Agregando...' : 'Agregar Roles'}
-          </button>
-
-          {/* Remove Roles Button */}
-          <button
-            onClick={() => {
-              setAction('remove')
-              handleRemoveRoles()
-            }}
-            disabled={loading}
-            className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
-          >
-            {loading && action === 'remove' ? 'Removiendo...' : 'Remover Roles'}
+            {loading ? 'Actualizando...' : 'Actualizar Roles'}
           </button>
 
           {/* Cancel Button */}
