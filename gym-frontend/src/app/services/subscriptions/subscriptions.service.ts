@@ -79,9 +79,23 @@ const subscriptionsService = {
    * Obtiene la suscripción de un usuario específico
    */
   getByUserId: async (userId: string) => {
-    const subscription = await apiService.get<Subscription>(
-      `${API_CONFIG.ENDPOINTS.SUBSCRIPTIONS}/user/${userId}`
-    );
+        console.log('[Debug] Entrando en getByUserId con userId:', userId);
+    console.log('[Debug] Inspeccionando API_CONFIG:', API_CONFIG);
+
+       // Verifiquemos si el endpoint existe antes de usarlo
+    if (!API_CONFIG || !API_CONFIG.ENDPOINTS || !API_CONFIG.ENDPOINTS.SUBSCRIPTIONS) {
+        console.error('[Error Fatal] La configuración de endpoints para SUBSCRIPTIONS no está definida.');
+        // Lanzamos un error claro para saber exactamente qué falló
+        throw new Error('API endpoint configuration for SUBSCRIPTIONS is missing.');
+    }
+     const endpointUrl = `${API_CONFIG.ENDPOINTS.SUBSCRIPTIONS}/user/${userId}`;
+    console.log('[Debug] URL construida:', endpointUrl);
+
+    console.log(`[debug] ${API_CONFIG.ENDPOINTS.SUBSCRIPTIONS}/user/${userId}`)
+    
+    const subscription = await apiService.get<Subscription>(endpointUrl);
+
+    console.log('se crea la sub?',subscription)
     return subscription;
   },
 
