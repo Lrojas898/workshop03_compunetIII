@@ -16,7 +16,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Eye, Trash2, Shield } from 'lucide-react'
+import { Eye, Trash2, Shield, CheckCircle, Ban } from 'lucide-react'
 import authenticationService from '@/app/services/auth/authentication.service'
 import type { User } from '@/app/interfaces/auth.interface'
 import { RolesBadge } from '@/app/components/features/users/RolesBadge'
@@ -64,15 +64,43 @@ export default function UsersManagementPage() {
     setIsRoleModalOpen(false)
   }
 
+  const handleToggleActive = async (userId: string, currentStatus: boolean) => {
+    const action = currentStatus ? 'desactivar' : 'activar'
+    const user = users.find(u => u.id === userId)
+
+    if (!confirm(`¿Estás seguro de que deseas ${action} a ${user?.fullName}?`)) return
+
+    try {
+      const updatedUser = await authenticationService.toggleUserActive(userId, !currentStatus)
+      setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u))
+    } catch (error: any) {
+      console.error(`Error ${action}ing user:`, error)
+      const errorMsg = error.response?.data?.message || `Error al ${action} usuario`
+      alert(errorMsg)
+    }
+  }
+
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este usuario?')) return
+    const user = users.find(u => u.id === userId)
+
+    // Primera confirmación
+    if (!confirm(`⚠️ ADVERTENCIA: Estás a punto de ELIMINAR PERMANENTEMENTE a ${user?.fullName}.\n\nEsta acción NO se puede deshacer y eliminará:\n- Todos los datos del usuario\n- Su historial de asistencias\n- Sus suscripciones\n\n¿Estás COMPLETAMENTE seguro?`)) return
+
+    // Segunda confirmación
+    const confirmText = prompt(`Para confirmar, escribe el nombre completo del usuario: "${user?.fullName}"`)
+    if (confirmText !== user?.fullName) {
+      alert('Nombre incorrecto. Eliminación cancelada.')
+      return
+    }
 
     try {
       await authenticationService.deleteUser(userId)
       setUsers(users.filter(u => u.id !== userId))
-    } catch (error) {
+      alert('Usuario eliminado permanentemente')
+    } catch (error: any) {
       console.error('Error deleting user:', error)
-      alert('Error al eliminar usuario')
+      const errorMsg = error.response?.data?.message || 'Error al eliminar usuario'
+      alert(errorMsg)
     }
   }
 
@@ -185,10 +213,27 @@ export default function UsersManagementPage() {
                         >
                           <Shield size={16} className="sm:w-[18px] sm:h-[18px]" />
                         </button>
+                        {user.isActive ? (
+                          <button
+                            onClick={() => handleToggleActive(user.id, user.isActive)}
+                            className="text-yellow-600 hover:text-yellow-800 transition"
+                            title="Desactivar usuario"
+                          >
+                            <Ban size={16} className="sm:w-[18px] sm:h-[18px]" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleToggleActive(user.id, user.isActive)}
+                            className="text-green-600 hover:text-green-800 transition"
+                            title="Activar usuario"
+                          >
+                            <CheckCircle size={16} className="sm:w-[18px] sm:h-[18px]" />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDeleteUser(user.id)}
                           className="text-red-600 hover:text-red-800 transition"
-                          title="Eliminar usuario"
+                          title="Eliminar usuario permanentemente"
                         >
                           <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
                         </button>

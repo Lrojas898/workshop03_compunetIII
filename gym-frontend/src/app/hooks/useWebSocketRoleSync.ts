@@ -17,13 +17,14 @@
 import { useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '@/app/_store/auth/auth.store'
+import toast from 'react-hot-toast'
 import { io, Socket } from 'socket.io-client'
 import { API_CONFIG } from '@/lib/configuration/api-endpoints'
 
 export function useWebSocketRoleSync() {
   const router = useRouter()
   const pathname = usePathname()
-  const { isAuthenticated, user, token, updateUser } = useAuthStore()
+  const { isAuthenticated, user, token, updateUser, logout } = useAuthStore()
   const socketRef = useRef<Socket | null>(null)
 
   useEffect(() => {
@@ -105,6 +106,26 @@ export function useWebSocketRoleSync() {
       }
     })
 
+    // Escuchar cambios de estado de usuario (activación/desactivación)
+    socket.on('userStatusChanged', ({ isActive, message }) => {
+      console.log('🔔 User status change notification received:', message)
+      console.log('New active status:', isActive)
+
+      if (!isActive) {
+        // Usuario fue desactivado - cerrar sesión
+        toast.error('Tu cuenta ha sido desactivada por un administrador. Serás redirigido al login.')
+
+        // Esperar 3 segundos antes de cerrar sesión para que el usuario vea el mensaje
+        setTimeout(() => {
+          logout()
+          router.push('/auth/login')
+        }, 3000)
+      } else {
+        // Usuario fue reactivado
+        toast.success('Tu cuenta ha sido reactivada. Ya puedes usar el sistema normalmente.')
+      }
+    })
+
     socket.on('disconnect', () => {
       console.log('❌ WebSocket disconnected')
     })
@@ -121,5 +142,5 @@ export function useWebSocketRoleSync() {
         socketRef.current = null
       }
     }
-  }, [isAuthenticated, user, token, updateUser, router, pathname])
+  }, [isAuthenticated, user, token, updateUser, logout, router, pathname])
 }

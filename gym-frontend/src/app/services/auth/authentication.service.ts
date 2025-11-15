@@ -105,6 +105,18 @@ const authenticationService = {
   },
 
   /**
+   * PATCH /auth/:id/toggle-active
+   * Activa o desactiva un usuario (solo admin)
+   */
+  toggleUserActive: async (userId: string, isActive: boolean) => {
+    const response = await apiService.patch<User>(
+      `${API_CONFIG.ENDPOINTS.AUTH}/${userId}/toggle-active`,
+      { isActive }
+    );
+    return response.data;
+  },
+
+  /**
    * PATCH /auth/:id/roles/assign
    * Reemplaza TODOS los roles del usuario con los nuevos roles proporcionados
    */
