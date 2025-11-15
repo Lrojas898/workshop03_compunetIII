@@ -17,9 +17,11 @@ import { useState, useEffect } from 'react'
 import { Calendar, TrendingUp, Filter, AlertCircle } from 'lucide-react'
 import { Button } from '@/app/components/ui/Button'
 import attendancesService from '@/app/services/attendances/attendances.service'
+import { useAuthStore } from '@/app/_store/auth/auth.store'
 import type { Attendance, AttendanceStatsResponse, AttendanceType } from '@/app/interfaces/attendance.interface'
 
 export default function MyAttendancePage() {
+  const { user } = useAuthStore()
   const [history, setHistory] = useState<Attendance[]>([])
   const [stats, setStats] = useState<AttendanceStatsResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -31,25 +33,22 @@ export default function MyAttendancePage() {
   }, [])
 
   const loadAttendanceData = async () => {
+    if (!user || !user.id) {
+      setError('No se pudo obtener información del usuario')
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError('')
 
     try {
-      const userDataStr = localStorage.getItem('userData')
-      if (!userDataStr) {
-        setError('No se pudo obtener información del usuario')
-        return
-      }
-
-      const userData = JSON.parse(userDataStr)
-      const userId = userData.id
-
       // Cargar historial
-      const historyData = await attendancesService.getHistory(userId)
+      const historyData = await attendancesService.getHistory(user.id)
       setHistory(historyData)
 
       // Cargar estadísticas
-      const statsData = await attendancesService.getStats(userId)
+      const statsData = await attendancesService.getStats(user.id)
       setStats(statsData)
     } catch (err: any) {
       console.error('Error loading attendance data:', err)
