@@ -41,14 +41,6 @@ export default function AdminDashboardPage() {
       color: 'bg-green-100',
       iconColor: 'text-green-600'
     },
-    {
-      title: 'Analítica',
-      description: 'Ver reportes y estadísticas detalladas',
-      href: '/admin/analytics',
-      icon: BarChart,
-      color: 'bg-orange-100',
-      iconColor: 'text-orange-600'
-    },
   ]
 
   return (

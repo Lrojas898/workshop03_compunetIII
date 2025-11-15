@@ -153,10 +153,10 @@ La aplicación espera los siguientes endpoints (configurables en `src/lib/config
 
 Para probar la aplicación, usa las siguientes credenciales (después de ejecutar el seed del backend):
 
-- **Admin:** `admin@test.com` / `password123`
-- **Receptionist:** `receptionist@test.com` / `password123`
-- **Coach:** `coach@test.com` / `password123`
-- **Client:** `client@test.com` / `password123`
+- **Admin:** `admin@example.com` / `admin123`
+- **Receptionist:** `receptionist@example.com` / `recep123`
+- **Coach:** `coach@example.com` / `coach123`
+- **Client:** `client@example.com` / `client123`
 
 ## Tecnologías Utilizadas
 

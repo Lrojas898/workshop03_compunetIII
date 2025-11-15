@@ -2,9 +2,11 @@
  * AXIOS INSTANCE CONFIGURATION
  *
  * Configuración base de axios con interceptores para Temple Gym API.
+ * Actualizado para usar el store de Zustand como fuente de verdad para la autenticación.
  */
 
 import axios from "axios";
+import { useAuthStore } from "@/app/_store/auth/auth.store";
 
 const instance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
@@ -14,15 +16,13 @@ const instance = axios.create({
     }
 });
 
-// Request Interceptor - Agregar token de autenticación
 instance.interceptors.request.use(
     (config) => {
-        // Obtener token desde localStorage
-        if (typeof window !== 'undefined') {
-            const token = localStorage.getItem('authToken');
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
+
+        const token = useAuthStore.getState().token;
+
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
         }
 
         return config;
@@ -32,7 +32,7 @@ instance.interceptors.request.use(
     }
 );
 
-// Response Interceptor - Manejo global de errores
+
 instance.interceptors.response.use(
     (response) => {
         return response;
@@ -41,12 +41,9 @@ instance.interceptors.response.use(
         if (error.response) {
             const { status } = error.response;
 
-            // Redirigir a login si token expirado o no autorizado
             if (status === 401) {
-                if (typeof window !== 'undefined') {
-                    localStorage.removeItem('authToken');
-                    window.location.href = '/login';
-                }
+                useAuthStore.getState().logout();
+                
             }
         }
 

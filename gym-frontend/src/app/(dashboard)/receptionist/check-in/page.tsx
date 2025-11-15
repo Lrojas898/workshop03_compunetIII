@@ -21,7 +21,7 @@ import { Button } from '@/app/components/ui/Button'
 import authenticationService from '@/app/services/auth/authentication.service'
 import attendancesService from '@/app/services/attendances/attendances.service'
 import type { User } from '@/app/interfaces/auth.interface'
-import type { AttendanceStatus, AttendanceType } from '@/app/interfaces/attendance.interface'
+import { AttendanceStatus, AttendanceType } from '@/app/interfaces/attendance.interface'
 
 export default function CheckInPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -33,7 +33,7 @@ export default function CheckInPage() {
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [attendanceType, setAttendanceType] = useState<AttendanceType>('gym')
+  const [attendanceType, setAttendanceType] = useState<AttendanceType>(AttendanceType.GYM)
 
   // Cargar todos los clientes al inicio
   useEffect(() => {

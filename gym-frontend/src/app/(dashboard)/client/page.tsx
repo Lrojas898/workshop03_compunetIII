@@ -21,31 +21,28 @@ import subscriptionsService from '@/app/services/subscriptions/subscriptions.ser
 import attendancesService from '@/app/services/attendances/attendances.service'
 import type { Subscription } from '@/app/interfaces/subscriptions.interface'
 import type { AttendanceStatus } from '@/app/interfaces/attendance.interface'
+import { useAuthStore } from '@/app/_store/auth/auth.store'
 
 export default function ClientDashboardPage() {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const { user } = useAuthStore()
 
   useEffect(() => {
-    loadDashboardData()
-  }, [])
+    if (!user) {
+      return
+    }
+    loadDashboardData(user.id)
+  }, [user]) 
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = async (userId: string) => {
     setLoading(true)
     setError('')
 
     try {
-      const userDataStr = localStorage.getItem('userData')
-      if (!userDataStr) {
-        setError('No se pudo obtener información del usuario')
-        return
-      }
-
-      const userData = JSON.parse(userDataStr)
-      const userId = userData.id
-
+   
       // Cargar suscripción del usuario
       try {
         const sub = await subscriptionsService.getByUserId(userId)
@@ -110,7 +107,9 @@ export default function ClientDashboardPage() {
     <div className="space-y-8 p-6">
       <div>
         <h1 className="text-4xl font-bold text-gray-900">Mi Dashboard</h1>
-        <p className="text-gray-600 mt-2">Bienvenido a tu panel personal</p>
+        <p className="text-gray-600 mt-2">
+          Bienvenido, {user?.fullName || 'a tu panel personal'}
+        </p>
       </div>
 
       {error && (
@@ -157,13 +156,12 @@ export default function ClientDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">Días Restantes</p>
-                  <p className={`text-2xl font-bold mt-2 ${
-                    daysRemaining > 30
+                  <p className={`text-2xl font-bold mt-2 ${daysRemaining > 30
                       ? 'text-green-600'
                       : daysRemaining > 7
-                      ? 'text-yellow-600'
-                      : 'text-red-600'
-                  }`}>
+                        ? 'text-yellow-600'
+                        : 'text-red-600'
+                    }`}>
                     {daysRemaining}
                   </p>
                 </div>
