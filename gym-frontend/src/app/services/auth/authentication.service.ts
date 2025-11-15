@@ -48,6 +48,15 @@ const authenticationService = {
   },
 
   /**
+   * GET /auth/me
+   * Obtiene los datos del usuario autenticado actual
+   */
+  getCurrentUser: async () => {
+    const user = await apiService.get<User>(`${API_CONFIG.ENDPOINTS.AUTH}/me`);
+    return user;
+  },
+
+  /**
    * GET /auth
    * Obtiene todos los usuarios del sistema (solo admin)
    */
