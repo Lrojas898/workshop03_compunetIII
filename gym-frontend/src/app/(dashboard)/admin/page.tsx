@@ -13,7 +13,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Users, CreditCard, FileText, BarChart } from 'lucide-react'
+import { Users, CreditCard, FileText, ClipboardList, Calendar } from 'lucide-react'
 
 export default function AdminDashboardPage() {
   const quickAccessLinks = [
@@ -41,6 +41,22 @@ export default function AdminDashboardPage() {
       color: 'bg-green-100',
       iconColor: 'text-green-600'
     },
+    {
+      title: 'Asistencias',
+      description: 'Ver historial de asistencias del gimnasio',
+      href: '/admin/attendances',
+      icon: ClipboardList,
+      color: 'bg-orange-100',
+      iconColor: 'text-orange-600'
+    },
+    {
+      title: 'Gestión de Clases',
+      description: 'Crear y administrar clases del gimnasio',
+      href: '/admin/classes',
+      icon: Calendar,
+      color: 'bg-teal-100',
+      iconColor: 'text-teal-600'
+    },
   ]
 
   return (
@@ -52,7 +68,7 @@ export default function AdminDashboardPage() {
 
       <section>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceso Rápido</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {quickAccessLinks.map((link) => {
             const IconComponent = link.icon
             return (
@@ -78,7 +94,7 @@ export default function AdminDashboardPage() {
         <h3 className="font-bold text-blue-900 mb-2">Información Útil</h3>
         <p className="text-blue-800 text-sm">
           Este es tu panel administrativo. Desde aquí puedes gestionar todos los aspectos de tu gimnasio incluyendo usuarios,
-          membresías, suscripciones y acceso a reportes detallados de analítica.
+          membresías, suscripciones, asistencias, clases y acceso a reportes detallados.
         </p>
       </section>
     </div>

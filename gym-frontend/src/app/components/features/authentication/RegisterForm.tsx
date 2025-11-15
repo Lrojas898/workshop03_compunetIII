@@ -81,17 +81,10 @@ export function RegisterForm() {
         password,
       })
 
-      setSuccess('Cuenta creada exitosamente. Redirigiendo al login...')
+      setSuccess('Cuenta creada exitosamente. Redirigiendo...')
 
-      // Guardar token y datos de usuario en localStorage
-      localStorage.setItem('authToken', response.token)
-      localStorage.setItem('userData', JSON.stringify({
-        id: response.id,
-        email: response.email,
-        fullName: response.fullName,
-        roles: response.roles,
-        isActive: response.isActive
-      }))
+      // Guardar en Zustand store
+      login(response)
 
       // Redirigir al dashboard según rol
       setTimeout(() => {
