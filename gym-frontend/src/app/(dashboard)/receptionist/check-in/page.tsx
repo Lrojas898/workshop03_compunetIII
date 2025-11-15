@@ -33,7 +33,8 @@ export default function CheckInPage() {
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [attendanceType, setAttendanceType] = useState<AttendanceType>(AttendanceType.GYM)
+  // Recepción siempre registra tipo gimnasio, las clases las registra el coach
+  const attendanceType = AttendanceType.GYM
 
   // Cargar todos los clientes al inicio
   useEffect(() => {
@@ -68,8 +69,8 @@ export default function CheckInPage() {
       
       const clients = users.filter(user => {
         const userRole = user.roles[0]?.name
-        // Solo clientes y que no sea el recepcionista actual
-        return userRole === 'client' && user.id !== currentUser?.id
+        // Solo clientes activos y que no sea el recepcionista actual
+        return userRole === 'client' && user.id !== currentUser?.id && user.isActive === true
       })
       
       setAllClients(clients)
@@ -348,28 +349,10 @@ export default function CheckInPage() {
               {/* Acciones */}
               {!userStatus.isInside ? (
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">Tipo de Asistencia</h3>
-                  <div className="flex gap-4 mb-4">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        value="gym"
-                        checked={attendanceType === 'gym'}
-                        onChange={(e) => setAttendanceType(e.target.value as AttendanceType)}
-                        className="w-4 h-4"
-                      />
-                      <span>Gimnasio</span>
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        value="class"
-                        checked={attendanceType === 'class'}
-                        onChange={(e) => setAttendanceType(e.target.value as AttendanceType)}
-                        className="w-4 h-4"
-                      />
-                      <span>Clase</span>
-                    </label>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>Nota:</strong> La recepción registra entradas al gimnasio. Las clases las registra el coach.
+                    </p>
                   </div>
 
                   <Button
@@ -379,7 +362,7 @@ export default function CheckInPage() {
                     className="w-full"
                   >
                     <UserCheck size={18} />
-                    Registrar Entrada
+                    Registrar Entrada al Gimnasio
                   </Button>
                 </div>
               ) : (
