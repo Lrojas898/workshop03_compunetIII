@@ -32,6 +32,7 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
   const [editingClass, setEditingClass] = useState<Class | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [currentUserId, setCurrentUserId] = useState<string>('')
 
   const [formData, setFormData] = useState<CreateClassDto>({
     name: '',
@@ -46,6 +47,12 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
   const [selectedClass, setSelectedClass] = useState<Class | null>(null)
 
   useEffect(() => {
+    // Obtener ID del usuario actual
+    const userDataStr = localStorage.getItem('userData')
+    if (userDataStr) {
+      const userData = JSON.parse(userDataStr)
+      setCurrentUserId(userData.id)
+    }
     loadClasses()
   }, [])
 
@@ -152,6 +159,12 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
   }
 
   const isAdmin = userRole === 'admin'
+
+  // Helper para determinar si el usuario puede modificar la clase
+  const canModifyClass = (classItem: Class) => {
+    if (isAdmin) return true // Admin puede todo
+    return classItem.createdBy?.id === currentUserId // Coach solo puede modificar sus clases
+  }
 
   if (loading && classes.length === 0) {
     return (
@@ -272,6 +285,7 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duración</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Capacidad</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Creador</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
             </tr>
@@ -285,6 +299,16 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
                   {classItem.duration_minutes ? `${classItem.duration_minutes} min` : '-'}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-600">{classItem.max_capacity}</td>
+                <td className="px-4 py-3 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <span>{classItem.createdBy?.fullName || 'N/A'}</span>
+                    {classItem.createdBy?.id === currentUserId && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Tuya
+                      </span>
+                    )}
+                  </div>
+                </td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     classItem.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
@@ -296,8 +320,17 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleEdit(classItem)}
-                      className="text-blue-600 hover:text-blue-800"
-                      title="Editar"
+                      disabled={!canModifyClass(classItem)}
+                      className={`${
+                        canModifyClass(classItem)
+                          ? 'text-blue-600 hover:text-blue-800'
+                          : 'text-gray-300 cursor-not-allowed'
+                      }`}
+                      title={
+                        canModifyClass(classItem)
+                          ? 'Editar'
+                          : 'No puedes editar clases de otros coaches'
+                      }
                     >
                       <Edit2 size={16} />
                     </button>
@@ -309,24 +342,38 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
                     >
                       <Users size={16} />
                     </button>
-                    {isAdmin && (
-                      <>
-                        <button
-                          onClick={() => handleToggleActive(classItem.id)}
-                          className="text-yellow-600 hover:text-yellow-800"
-                          title={classItem.isActive ? 'Desactivar' : 'Activar'}
-                        >
-                          <Power size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(classItem.id, classItem.name)}
-                          className="text-red-600 hover:text-red-800"
-                          title="Eliminar"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </>
-                    )}
+                    <button
+                      onClick={() => handleToggleActive(classItem.id)}
+                      disabled={!canModifyClass(classItem)}
+                      className={`${
+                        canModifyClass(classItem)
+                          ? 'text-yellow-600 hover:text-yellow-800'
+                          : 'text-gray-300 cursor-not-allowed'
+                      }`}
+                      title={
+                        canModifyClass(classItem)
+                          ? classItem.isActive ? 'Desactivar' : 'Activar'
+                          : 'No puedes modificar clases de otros coaches'
+                      }
+                    >
+                      <Power size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(classItem.id, classItem.name)}
+                      disabled={!canModifyClass(classItem)}
+                      className={`${
+                        canModifyClass(classItem)
+                          ? 'text-red-600 hover:text-red-800'
+                          : 'text-gray-300 cursor-not-allowed'
+                      }`}
+                      title={
+                        canModifyClass(classItem)
+                          ? 'Eliminar'
+                          : 'No puedes eliminar clases de otros coaches'
+                      }
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </td>
               </tr>
