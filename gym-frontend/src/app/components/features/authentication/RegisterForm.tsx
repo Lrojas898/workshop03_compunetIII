@@ -17,6 +17,8 @@ import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import authenticationService from '@/app/services/auth/authentication.service'
+import { useAuthStore } from '@/app/_store/auth/auth.store'
+import { Dumbbell } from 'lucide-react'
 
 export function RegisterForm() {
   const router = useRouter()
@@ -28,6 +30,7 @@ export function RegisterForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const { login } = useAuthStore()
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -81,9 +84,8 @@ export function RegisterForm() {
         password,
       })
 
-      setSuccess('Cuenta creada exitosamente. Redirigiendo...')
+      setSuccess('Cuenta creada exitosamente. Redirigiendo al dashboard')
 
-      // Guardar en Zustand store
       login(response)
 
       // Redirigir al dashboard según rol
@@ -103,9 +105,10 @@ export function RegisterForm() {
             router.push('/client')
             break
           default:
-            router.push('/admin')
+            router.push('/client')
         }
       }, 1500)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const message = err.response?.data?.message || 'Error al crear la cuenta. Intenta de nuevo.'
       setError(message)
@@ -114,119 +117,91 @@ export function RegisterForm() {
     }
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900">Gym Manager</h1>
-        <p className="text-gray-600 mt-2">Crea tu cuenta</p>
+   return (
+  <div className="relative min-h-screen bg-black text-white flex items-center justify-center p-4">
+      {/* Fondo con imagen de Héroe y superposición oscura */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url('/hero-gym.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-black/70" />
       </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-          {success}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
-            Nombre Completo
-          </label>
-          <input
-            id="fullName"
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="Juan Pérez"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={loading}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="tu@email.com"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={loading}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="age" className="block text-sm font-medium text-gray-700 mb-1">
-            Edad
-          </label>
-          <input
-            id="age"
-            type="number"
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
-            placeholder="25"
-            min="1"
-            max="120"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={loading}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            Contraseña
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={loading}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-            Confirmar Contraseña
-          </label>
-          <input
-            id="confirmPassword"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="••••••"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={loading}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
-        >
-          {loading ? 'Creando cuenta...' : 'Crear cuenta'}
-        </button>
-      </form>
-
-      <div className="text-center">
-        <p className="text-gray-600">
-          ¿Ya tienes cuenta?{' '}
-          <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-            Inicia sesión aquí
+      {/* Tarjeta del Formulario */}
+      <div className="relative z-10 w-full max-w-md bg-gray-900/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg">
+        {/* Logo y Título */}
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-2 mb-4">
+            <Dumbbell className="h-8 w-8 text-amber-400" />
+            <span className="text-2xl font-bold tracking-tight">
+              Temple <span className="text-amber-400">Gym</span>
+            </span>
           </Link>
-        </p>
+          <p className="text-gray-400">Crea tu cuenta para empezar</p>
+        </div>
+
+        {/* Mensajes de Alerta con nuevo estilo */}
+        {error && (
+          <div className="bg-red-500/20 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg mb-4 text-sm">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="bg-green-500/20 border border-green-500/30 text-green-300 px-4 py-3 rounded-lg mb-4 text-sm">
+            {success}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Campos del formulario con el nuevo estilo */}
+          <input
+            id="fullName" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)}
+            placeholder="Nombre Completo"
+            className="!text-white w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+            disabled={loading}
+          />
+          <input
+            id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            className="!text-white w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+            disabled={loading}
+          />
+          <input
+            id="age" type="number" value={age} onChange={(e) => setAge(e.target.value)}
+            placeholder="Edad"
+            className="!text-white w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+            disabled={loading}
+          />
+          <input
+            id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+            placeholder="Contraseña (mín. 6 caracteres)"
+            className="!text-white w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+            disabled={loading}
+          />
+          <input
+            id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirmar Contraseña"
+            className="!text-white w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+            disabled={loading}
+          />
+
+          <button
+            type="submit"
+            disabled={loading || success !== ''} // Deshabilitar también si el registro fue exitoso
+            className="w-full px-4 py-3 bg-amber-400 hover:bg-amber-300 text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+          </button>
+        </form>
+
+        <div className="text-center mt-6">
+          <p className="text-gray-400 text-sm">
+            ¿Ya tienes una cuenta?{' '}
+            <Link href="/login" className="text-amber-400 hover:text-amber-300 font-medium">
+              Inicia sesión
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )
