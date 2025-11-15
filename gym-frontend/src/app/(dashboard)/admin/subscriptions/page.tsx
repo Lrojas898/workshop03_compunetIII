@@ -158,10 +158,10 @@ export default function SubscriptionsManagementPage() {
   ]
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Subscriptions Management</h1>
-        <p className="text-gray-600 mt-1">View and manage user subscriptions</p>
+    <div className="p-4 sm:p-6">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Subscriptions Management</h1>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">View and manage user subscriptions</p>
       </div>
 
       <div className="mb-4">

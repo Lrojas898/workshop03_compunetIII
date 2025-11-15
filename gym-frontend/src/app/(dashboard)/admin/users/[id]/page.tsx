@@ -108,27 +108,27 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       {/* Back Button */}
       <button
         onClick={handleGoBack}
-        className="mb-6 flex items-center gap-2 text-blue-600 hover:text-blue-800 transition"
+        className="mb-4 sm:mb-6 flex items-center gap-2 text-blue-600 hover:text-blue-800 transition"
       >
-        <ArrowLeft size={20} />
-        Volver
+        <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
+        <span className="text-sm sm:text-base">Volver</span>
       </button>
 
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{user.fullName}</h1>
-        <p className="text-gray-600 mt-1">Detalles del usuario</p>
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 break-words">{user.fullName}</h1>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">Detalles del usuario</p>
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* User Information Card */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Información Personal</h2>
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Información Personal</h2>
 
           <div className="space-y-4">
             <div>
@@ -167,16 +167,17 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
         </div>
 
         {/* Roles Card */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">Roles Asignados</h2>
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900">Roles Asignados</h2>
             <button
               onClick={() => setIsRoleModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition"
+              className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium rounded-lg transition"
               title="Gestionar roles"
             >
-              <Shield size={18} />
-              Gestionar
+              <Shield size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <span className="hidden sm:inline">Gestionar</span>
+              <span className="sm:hidden">Roles</span>
             </button>
           </div>
 
@@ -207,10 +208,10 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
       </div>
 
       {/* Account Info Card */}
-      <div className="bg-white rounded-lg shadow p-6 mt-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Información de Cuenta</h2>
+      <div className="bg-white rounded-lg shadow p-4 sm:p-6 mt-4 sm:mt-6">
+        <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Información de Cuenta</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <div>
             <label className="text-sm font-medium text-gray-700">Fecha de Creación</label>
             <p className="text-gray-900 mt-1">
