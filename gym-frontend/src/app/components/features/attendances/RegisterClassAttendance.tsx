@@ -54,7 +54,8 @@ export function RegisterClassAttendance({ onSuccess }: RegisterClassAttendancePr
       const clients = usersData.filter((user: User) => {
         const isClient = user.roles?.some((role: any) => role.name === 'client')
         const isNotCurrentUser = !currentUser || user.id !== currentUser.id
-        return isClient && isNotCurrentUser
+        const isActive = user.isActive === true
+        return isClient && isNotCurrentUser && isActive
       })
 
       setUsers(clients)

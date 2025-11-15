@@ -68,8 +68,8 @@ export default function CheckInPage() {
       
       const clients = users.filter(user => {
         const userRole = user.roles[0]?.name
-        // Solo clientes y que no sea el recepcionista actual
-        return userRole === 'client' && user.id !== currentUser?.id
+        // Solo clientes activos y que no sea el recepcionista actual
+        return userRole === 'client' && user.id !== currentUser?.id && user.isActive === true
       })
       
       setAllClients(clients)
