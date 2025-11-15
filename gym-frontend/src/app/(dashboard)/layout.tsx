@@ -24,6 +24,7 @@ import type { User, UpdateUserDto } from '@/app/interfaces/auth.interface'
 import { AddRoleHelper } from '@/app/components/dev/AddRoleHelper'
 import { ValidRoles } from '@/lib/configuration/api-endpoints'
 import { useAuthStore } from '../_store/auth/auth.store'
+import { useWebSocketRoleSync } from '@/app/hooks/useWebSocketRoleSync'
 
 export default function DashboardLayout({
   children,
@@ -35,6 +36,9 @@ export default function DashboardLayout({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
+
+  // Hook para sincronizar cambios de roles vía WebSocket
+  useWebSocketRoleSync()
 
   useEffect(() => {
     setIsHydrated(true)

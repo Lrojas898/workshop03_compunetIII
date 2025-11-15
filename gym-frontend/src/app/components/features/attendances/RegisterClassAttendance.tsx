@@ -47,9 +47,15 @@ export function RegisterClassAttendance({ onSuccess }: RegisterClassAttendancePr
         classesService.getActive(),
       ])
 
-      const clients = usersData.filter((user: User) =>
-        user.roles?.some((role: any) => role.name === 'client')
-      )
+      // Obtener el usuario actual para excluirlo de la lista
+      const currentUserStr = localStorage.getItem('userData')
+      const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null
+
+      const clients = usersData.filter((user: User) => {
+        const isClient = user.roles?.some((role: any) => role.name === 'client')
+        const isNotCurrentUser = !currentUser || user.id !== currentUser.id
+        return isClient && isNotCurrentUser
+      })
 
       setUsers(clients)
       setClasses(classesData)
@@ -63,6 +69,17 @@ export function RegisterClassAttendance({ onSuccess }: RegisterClassAttendancePr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validación de seguridad: evitar auto-registro
+    const currentUserStr = localStorage.getItem('userData')
+    if (currentUserStr) {
+      const currentUser = JSON.parse(currentUserStr)
+      if (currentUser.id === selectedUserId) {
+        setError('❌ No puedes registrar asistencia para ti mismo')
+        return
+      }
+    }
+
     setLoading(true)
     setError('')
     setSuccess('')

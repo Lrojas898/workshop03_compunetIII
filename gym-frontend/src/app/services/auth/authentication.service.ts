@@ -48,6 +48,15 @@ const authenticationService = {
   },
 
   /**
+   * GET /auth/me
+   * Obtiene los datos del usuario autenticado actual
+   */
+  getCurrentUser: async () => {
+    const user = await apiService.get<User>(`${API_CONFIG.ENDPOINTS.AUTH}/me`);
+    return user;
+  },
+
+  /**
    * GET /auth
    * Obtiene todos los usuarios del sistema (solo admin)
    */
@@ -91,6 +100,18 @@ const authenticationService = {
   deleteUser: async (userId: string) => {
     const response = await apiService.delete<User>(
       `${API_CONFIG.ENDPOINTS.AUTH}/${userId}`
+    );
+    return response.data;
+  },
+
+  /**
+   * PATCH /auth/:id/toggle-active
+   * Activa o desactiva un usuario (solo admin)
+   */
+  toggleUserActive: async (userId: string, isActive: boolean) => {
+    const response = await apiService.patch<User>(
+      `${API_CONFIG.ENDPOINTS.AUTH}/${userId}/toggle-active`,
+      { isActive }
     );
     return response.data;
   },
