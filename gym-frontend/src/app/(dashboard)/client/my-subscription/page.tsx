@@ -19,10 +19,12 @@ import Link from 'next/link'
 import { Calendar, Check, AlertCircle, ShoppingBag, Clock, CheckCircle2, XCircle } from 'lucide-react'
 import subscriptionsService from '@/app/services/subscriptions/subscriptions.service'
 import attendancesService from '@/app/services/attendances/attendances.service'
+import { useAuthStore } from '@/app/_store/auth/auth.store'
 import type { Subscription } from '@/app/interfaces/subscriptions.interface'
 import type { AttendanceStatus } from '@/app/interfaces/attendance.interface'
 
 export default function MySubscriptionPage() {
+  const { user } = useAuthStore()
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus | null>(null)
   const [loading, setLoading] = useState(true)
@@ -33,27 +35,24 @@ export default function MySubscriptionPage() {
   }, [])
 
   const loadSubscription = async () => {
+    if (!user || !user.id) {
+      setError('No se pudo obtener información del usuario')
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError('')
 
     try {
-      const userDataStr = localStorage.getItem('userData')
-      if (!userDataStr) {
-        setError('No se pudo obtener información del usuario')
-        return
-      }
-
-      const userData = JSON.parse(userDataStr)
-      const userId = userData.id
-
       // Cargar suscripción
       try {
-        const sub = await subscriptionsService.getByUserId(userId)
+        const sub = await subscriptionsService.getByUserId(user.id)
         setSubscription(sub)
 
         // Cargar estado de asistencias
         try {
-          const status = await attendancesService.getStatus(userId)
+          const status = await attendancesService.getStatus(user.id)
           setAttendanceStatus(status)
         } catch (err) {
           console.error('Error loading attendance status:', err)

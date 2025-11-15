@@ -64,7 +64,8 @@ export default function AdminAttendancesPage() {
     total: attendances.length,
     gym: attendances.filter(a => a.type === 'gym').length,
     classes: attendances.filter(a => a.type === 'class').length,
-    activeNow: attendances.filter(a => !a.exitDatetime).length,
+    // Solo contar asistencias de gimnasio sin exitDatetime (las clases nunca tienen check-out)
+    activeNow: attendances.filter(a => a.type === 'gym' && !a.exitDatetime).length,
     today: attendances.filter(a => {
       const today = new Date().toISOString().split('T')[0]
       const attendanceDate = new Date(a.entranceDatetime).toISOString().split('T')[0]
@@ -97,10 +98,24 @@ export default function AdminAttendancesPage() {
     const duration = Math.floor((exitTime - entranceTime) / 1000 / 60) // en minutos
 
     if (duration < 60) return `${duration} min`
-    
+
     const hours = Math.floor(duration / 60)
     const minutes = duration % 60
     return `${hours}h ${minutes}m`
+  }
+
+  const getAttendanceStatus = (attendance: Attendance) => {
+    // Para clases, siempre mostrar "Registrado"
+    if (attendance.type === 'class') {
+      return { label: 'Registrado', className: 'bg-purple-100 text-purple-800' }
+    }
+
+    // Para gimnasio, mostrar estado basado en exitDatetime
+    if (!attendance.exitDatetime) {
+      return { label: 'Dentro', className: 'bg-green-100 text-green-800' }
+    }
+
+    return { label: 'Salió', className: 'bg-gray-100 text-gray-800' }
   }
 
   return (
@@ -136,7 +151,7 @@ export default function AdminAttendancesPage() {
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">Activos Ahora</p>
+              <p className="text-sm font-medium text-gray-500">Dentro del Gym</p>
               <p className="text-2xl font-bold text-green-600 mt-1">{stats.activeNow}</p>
             </div>
             <Users className="text-green-400" size={32} />
@@ -303,19 +318,24 @@ export default function AdminAttendancesPage() {
                       {formatTime(attendance.entranceDatetime)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {attendance.exitDatetime ? formatTime(attendance.exitDatetime) : '-'}
+                      {attendance.type === 'class'
+                        ? '-'
+                        : attendance.exitDatetime ? formatTime(attendance.exitDatetime) : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {calculateDuration(attendance.entranceDatetime, attendance.exitDatetime)}
+                      {attendance.type === 'class'
+                        ? '-'
+                        : calculateDuration(attendance.entranceDatetime, attendance.exitDatetime)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        !attendance.exitDatetime
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {!attendance.exitDatetime ? 'Activo' : 'Completado'}
-                      </span>
+                      {(() => {
+                        const status = getAttendanceStatus(attendance)
+                        return (
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${status.className}`}>
+                            {status.label}
+                          </span>
+                        )
+                      })()}
                     </td>
                   </tr>
                 ))}

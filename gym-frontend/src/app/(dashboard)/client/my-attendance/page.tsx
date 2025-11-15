@@ -17,9 +17,11 @@ import { useState, useEffect } from 'react'
 import { Calendar, TrendingUp, Filter, AlertCircle } from 'lucide-react'
 import { Button } from '@/app/components/ui/Button'
 import attendancesService from '@/app/services/attendances/attendances.service'
+import { useAuthStore } from '@/app/_store/auth/auth.store'
 import type { Attendance, AttendanceStatsResponse, AttendanceType } from '@/app/interfaces/attendance.interface'
 
 export default function MyAttendancePage() {
+  const { user } = useAuthStore()
   const [history, setHistory] = useState<Attendance[]>([])
   const [stats, setStats] = useState<AttendanceStatsResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -31,25 +33,22 @@ export default function MyAttendancePage() {
   }, [])
 
   const loadAttendanceData = async () => {
+    if (!user || !user.id) {
+      setError('No se pudo obtener información del usuario')
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError('')
 
     try {
-      const userDataStr = localStorage.getItem('userData')
-      if (!userDataStr) {
-        setError('No se pudo obtener información del usuario')
-        return
-      }
-
-      const userData = JSON.parse(userDataStr)
-      const userId = userData.id
-
       // Cargar historial
-      const historyData = await attendancesService.getHistory(userId)
+      const historyData = await attendancesService.getHistory(user.id)
       setHistory(historyData)
 
       // Cargar estadísticas
-      const statsData = await attendancesService.getStats(userId)
+      const statsData = await attendancesService.getStats(user.id)
       setStats(statsData)
     } catch (err: any) {
       console.error('Error loading attendance data:', err)
@@ -252,6 +251,9 @@ export default function MyAttendancePage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Duración
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Estado
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -272,30 +274,31 @@ export default function MyAttendancePage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {formatTime(attendance.entranceDatetime)}
                         </td>
-                        {/* Solo mostrar salida si no es clase */}
-                        {attendance.type === 'gym' ? (
-                          <>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {attendance.exitDatetime ? formatTime(attendance.exitDatetime) : '-'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {calculateDuration(attendance.entranceDatetime, attendance.exitDatetime)}
-                            </td>
-                          </>
-                        ) : (
-                          <>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400 italic">
-                              {/* No mostrar salida para clases */}
-                              No aplica para clases
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {/* Mostrar duración definida por el coach para la clase */}
-                              {attendance.class && attendance.class.duration_minutes
-                                ? `${attendance.class.duration_minutes} min`
-                                : '-'}
-                            </td>
-                          </>
-                        )}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {attendance.type === 'class'
+                            ? '-'
+                            : attendance.exitDatetime ? formatTime(attendance.exitDatetime) : '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {attendance.type === 'class'
+                            ? '-'
+                            : calculateDuration(attendance.entranceDatetime, attendance.exitDatetime)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {attendance.type === 'class' ? (
+                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                              Registrado
+                            </span>
+                          ) : !attendance.exitDatetime ? (
+                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                              Dentro
+                            </span>
+                          ) : (
+                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                              Salió
+                            </span>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

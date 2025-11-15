@@ -19,10 +19,12 @@ import { Check, X, ShoppingCart, AlertCircle, CreditCard } from 'lucide-react'
 import { Button } from '@/app/components/ui/Button'
 import membershipsService from '@/app/services/memberships/memberships.service'
 import subscriptionsService from '@/app/services/subscriptions/subscriptions.service'
+import { useAuthStore } from '@/app/_store/auth/auth.store'
 import type { Membership } from '@/app/interfaces/membership.interface'
 
 export default function MembershipsPage() {
   const router = useRouter()
+  const { user } = useAuthStore()
   const [memberships, setMemberships] = useState<Membership[]>([])
   const [selectedMembershipIds, setSelectedMembershipIds] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
@@ -77,24 +79,19 @@ export default function MembershipsPage() {
       return
     }
 
+    // Validar que el usuario esté autenticado
+    if (!user || !user.id) {
+      setError('No se pudo obtener información del usuario. Por favor, inicia sesión nuevamente.')
+      return
+    }
+
     setError('')
     setSuccess('')
     setPurchasing(true)
 
     try {
-      // Obtener userId del localStorage
-      const userDataStr = localStorage.getItem('userData')
-      if (!userDataStr) {
-        setError('No se pudo obtener información del usuario')
-        setPurchasing(false)
-        return
-      }
-
-      const userData = JSON.parse(userDataStr)
-      const userId = userData.id
-
       // Agregar membresías a la suscripción existente del usuario
-      await subscriptionsService.addMembershipsToUserSubscription(userId, selectedMembershipIds)
+      await subscriptionsService.addMembershipsToUserSubscription(user.id, selectedMembershipIds)
 
       setSuccess('¡Membresías agregadas exitosamente! Redirigiendo...')
 
