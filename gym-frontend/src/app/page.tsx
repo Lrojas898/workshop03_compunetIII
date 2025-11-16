@@ -24,16 +24,16 @@ export default function HomePage() {
           <nav className="flex items-center justify-between">
             {/* Logo a la izquierda */}
             <Link href="/" className="flex items-center gap-2">
-              <Dumbbell className="h-8 w-8 text-amber-400" />
+              <Dumbbell className="h-8 w-8 text-blue-400" />
               <span className="text-2xl font-bold tracking-tight">
-                Temple <span className="text-amber-400">Gym</span>
+                Temple <span className="text-blue-400">Gym</span>
               </span>
             </Link>
 
             {/* Botón de Iniciar Sesión a la derecha */}
             <Link
               href="/login"
-              className="bg-amber-400 text-black font-semibold py-2 px-5 rounded-md hover:bg-amber-300 transition-colors"
+              className="bg-blue-400 text-black font-semibold py-2 px-5 rounded-md hover:bg-blue-300 transition-colors"
             >
               Iniciar Sesión
             </Link>

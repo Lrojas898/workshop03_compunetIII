@@ -18,6 +18,7 @@ import { Button } from '@/app/components/ui/Button'
 import authenticationService from '@/app/services/auth/authentication.service'
 import attendancesService from '@/app/services/attendances/attendances.service'
 import classesService from '@/app/services/classes/classes.service'
+import { useAuthStore } from '@/app/_store/auth/auth.store'
 import type { User } from '@/app/interfaces/auth.interface'
 import type { Class } from '@/app/interfaces/classes.interface'
 
@@ -26,6 +27,7 @@ interface RegisterClassAttendanceProps {
 }
 
 export function RegisterClassAttendance({ onSuccess }: RegisterClassAttendanceProps) {
+  const { user: currentUser } = useAuthStore()
   const [users, setUsers] = useState<User[]>([])
   const [classes, setClasses] = useState<Class[]>([])
   const [selectedUserId, setSelectedUserId] = useState('')
@@ -38,6 +40,7 @@ export function RegisterClassAttendance({ onSuccess }: RegisterClassAttendancePr
 
   useEffect(() => {
     loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadData = async () => {
@@ -46,10 +49,6 @@ export function RegisterClassAttendance({ onSuccess }: RegisterClassAttendancePr
         authenticationService.getAllUsers(),
         classesService.getActive(),
       ])
-
-      // Obtener el usuario actual para excluirlo de la lista
-      const currentUserStr = localStorage.getItem('userData')
-      const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null
 
       const clients = usersData.filter((user: User) => {
         const isClient = user.roles?.some((role: any) => role.name === 'client')
@@ -71,13 +70,9 @@ export function RegisterClassAttendance({ onSuccess }: RegisterClassAttendancePr
     e.preventDefault()
 
     // Validación de seguridad: evitar auto-registro
-    const currentUserStr = localStorage.getItem('userData')
-    if (currentUserStr) {
-      const currentUser = JSON.parse(currentUserStr)
-      if (currentUser.id === selectedUserId) {
-        setError('❌ No puedes registrar asistencia para ti mismo')
-        return
-      }
+    if (currentUser && currentUser.id === selectedUserId) {
+      setError('❌ No puedes registrar asistencia para ti mismo')
+      return
     }
 
     setLoading(true)
