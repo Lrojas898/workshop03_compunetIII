@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+out/
+build/
+
+# Testing
+coverage/
+cypress/videos/
+cypress/screenshots/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Environment files
+.env
+.env.*
+!.env.example
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Misc
+README.md
+todos.md
+scripts/
