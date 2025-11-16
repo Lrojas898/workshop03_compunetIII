@@ -17,6 +17,7 @@ import { Plus, Edit2, Trash2, Power, AlertCircle, CheckCircle, Users } from 'luc
 import { Button } from '@/app/components/ui/Button'
 import classesService from '@/app/services/classes/classes.service'
 import attendancesService from '@/app/services/attendances/attendances.service'
+import { useAuthStore } from '@/app/_store/auth/auth.store'
 import { Modal } from '@/app/components/ui/Modal'
 import type { Class, CreateClassDto } from '@/app/interfaces/classes.interface'
 import type { ClassAttendance } from '@/app/interfaces/attendances.interface'
@@ -26,13 +27,13 @@ interface ClassManagementProps {
 }
 
 export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
+  const { user } = useAuthStore()
   const [classes, setClasses] = useState<Class[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingClass, setEditingClass] = useState<Class | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [currentUserId, setCurrentUserId] = useState<string>('')
 
   const [formData, setFormData] = useState<CreateClassDto>({
     name: '',
@@ -47,12 +48,6 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
   const [selectedClass, setSelectedClass] = useState<Class | null>(null)
 
   useEffect(() => {
-    // Obtener ID del usuario actual
-    const userDataStr = localStorage.getItem('userData')
-    if (userDataStr) {
-      const userData = JSON.parse(userDataStr)
-      setCurrentUserId(userData.id)
-    }
     loadClasses()
   }, [])
 
@@ -162,8 +157,25 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
 
   // Helper para determinar si el usuario puede modificar la clase
   const canModifyClass = (classItem: Class) => {
-    if (isAdmin) return true // Admin puede todo
-    return classItem.createdBy?.id === currentUserId // Coach solo puede modificar sus clases
+    if (!user?.id) {
+      console.log('❌ No hay usuario logueado')
+      return false
+    }
+    if (isAdmin) {
+      console.log('✅ Usuario es ADMIN - puede modificar todo')
+      return true
+    }
+    
+    const canModify = classItem.createdBy?.id === user.id
+    console.log('🔍 Verificando permisos:', {
+      className: classItem.name,
+      createdById: classItem.createdBy?.id,
+      currentUserId: user.id,
+      canModify,
+      isMatch: classItem.createdBy?.id === user.id
+    })
+    
+    return canModify
   }
 
   if (loading && classes.length === 0) {
@@ -302,7 +314,7 @@ export function ClassManagement({ userRole = 'coach' }: ClassManagementProps) {
                 <td className="px-4 py-3 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
                     <span>{classItem.createdBy?.fullName || 'N/A'}</span>
-                    {classItem.createdBy?.id === currentUserId && (
+                    {classItem.createdBy?.id === user?.id && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         Tuya
                       </span>

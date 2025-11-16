@@ -16,14 +16,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, UserCheck, UserX, Calendar, CreditCard, AlertCircle, ArrowLeft, Users, Mail } from 'lucide-react'
+import { Search, UserCheck, UserX, CreditCard, AlertCircle, ArrowLeft, Users, Mail } from 'lucide-react'
 import { Button } from '@/app/components/ui/Button'
 import authenticationService from '@/app/services/auth/authentication.service'
 import attendancesService from '@/app/services/attendances/attendances.service'
+import { useAuthStore } from '@/app/_store/auth/auth.store'
 import type { User } from '@/app/interfaces/auth.interface'
 import { AttendanceStatus, AttendanceType } from '@/app/interfaces/attendance.interface'
 
 export default function CheckInPage() {
+  const { user: currentUser } = useAuthStore()
   const [searchQuery, setSearchQuery] = useState('')
   const [allClients, setAllClients] = useState<User[]>([])
   const [filteredClients, setFilteredClients] = useState<User[]>([])
@@ -39,6 +41,7 @@ export default function CheckInPage() {
   // Cargar todos los clientes al inicio
   useEffect(() => {
     loadClients()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Filtrar clientes en tiempo real
@@ -64,9 +67,6 @@ export default function CheckInPage() {
       const users = await authenticationService.getAllUsers()
       
       // Filtrar solo clientes
-      const currentUserStr = localStorage.getItem('userData')
-      const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null
-      
       const clients = users.filter(user => {
         const userRole = user.roles[0]?.name
         // Solo clientes activos y que no sea el recepcionista actual
@@ -117,13 +117,9 @@ export default function CheckInPage() {
     if (!selectedUser) return
 
     // Validación de seguridad adicional antes de check-in
-    const currentUserStr = localStorage.getItem('userData')
-    if (currentUserStr) {
-      const currentUser = JSON.parse(currentUserStr)
-      if (currentUser.id === selectedUser.id) {
-        setError('❌ No puedes registrar asistencia para ti mismo')
-        return
-      }
+    if (currentUser && currentUser.id === selectedUser.id) {
+      setError('❌ No puedes registrar asistencia para ti mismo')
+      return
     }
 
     const userRole = selectedUser.roles[0]?.name
