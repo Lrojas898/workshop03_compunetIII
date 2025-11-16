@@ -16,7 +16,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, CreditCard, FileText, UserCheck, ShoppingBag, Calendar, ClipboardList, UserCircle, LogOut, ChevronDown } from 'lucide-react'
+import { LayoutDashboard, Users, CreditCard, FileText, UserCheck, ShoppingBag, Calendar, ClipboardList, UserCircle, LogOut, ChevronDown, Dumbbell } from 'lucide-react'
 import { Modal } from '@/app/components/ui/Modal'
 import { EditProfileForm } from '@/app/components/features/users/EditProfileForm'
 import authenticationService from '@/app/services/auth/authentication.service'
@@ -145,7 +145,7 @@ export default function DashboardLayout({
     ...(hasRole(ValidRoles.CLIENT) ? clientNavItems : []),
   ]
 
-  const sidebarTitle = 'Gym Manager'
+  const sidebarTitle = 'Temple Gym'
 
   // Mostrar todos los roles en el label principal
   const userRoleLabel = userRoles.length > 0
@@ -173,8 +173,11 @@ export default function DashboardLayout({
       {/* Top Navigation Bar */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-blue-600">
-            Gym Manager
+          <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-gray-900">
+            <Dumbbell className="h-8 w-8 text-blue-600" />
+            <span>
+              Temple <span className="text-blue-600">Gym</span>
+            </span>
           </Link>
           <div className="relative profile-menu-container">
             <button

@@ -118,7 +118,7 @@ export function RegisterForm() {
   }
 
    return (
-  <div className="relative min-h-screen bg-black text-white flex items-center justify-center p-4">
+  <div className="relative min-h-screen bg-black text-white flex items-center justify-center p-4 sm:p-6 md:p-8">
       {/* Fondo con imagen de Héroe y superposición oscura */}
       <div
         className="absolute inset-0 bg-cover bg-center"
@@ -128,76 +128,76 @@ export function RegisterForm() {
       </div>
 
       {/* Tarjeta del Formulario */}
-      <div className="relative z-10 w-full max-w-md bg-gray-900/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg">
+      <div className="relative z-10 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl bg-gray-900/80 backdrop-blur-sm p-6 sm:p-8 md:p-10 lg:p-12 rounded-2xl shadow-2xl">
         {/* Logo y Título */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 md:mb-10">
           <Link href="/" className="inline-flex items-center gap-2 mb-4">
-            <Dumbbell className="h-8 w-8 text-amber-400" />
-            <span className="text-2xl font-bold tracking-tight">
-              Temple <span className="text-amber-400">Gym</span>
+            <Dumbbell className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-blue-400" />
+            <span className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+              Temple <span className="text-blue-400">Gym</span>
             </span>
           </Link>
-          <p className="text-gray-400">Crea tu cuenta para empezar</p>
+          <p className="text-gray-400 text-sm sm:text-base md:text-lg">Crea tu cuenta para empezar</p>
         </div>
 
         {/* Mensajes de Alerta con nuevo estilo */}
         {error && (
-          <div className="bg-red-500/20 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg mb-4 text-sm">
+          <div className="bg-red-500/20 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg mb-4 text-sm sm:text-base">
             {error}
           </div>
         )}
         {success && (
-          <div className="bg-green-500/20 border border-green-500/30 text-green-300 px-4 py-3 rounded-lg mb-4 text-sm">
+          <div className="bg-green-500/20 border border-green-500/30 text-green-300 px-4 py-3 rounded-lg mb-4 text-sm sm:text-base">
             {success}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
           {/* Campos del formulario con el nuevo estilo */}
           <input
             id="fullName" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)}
             placeholder="Nombre Completo"
-            className="!text-white w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+            className="!text-white w-full px-4 py-2.5 sm:py-3 text-sm sm:text-base bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             disabled={loading}
           />
           <input
             id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
-            className="!text-white w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+            className="!text-white w-full px-4 py-2.5 sm:py-3 text-sm sm:text-base bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             disabled={loading}
           />
           <input
             id="age" type="number" value={age} onChange={(e) => setAge(e.target.value)}
             placeholder="Edad"
-            className="!text-white w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+            className="!text-white w-full px-4 py-2.5 sm:py-3 text-sm sm:text-base bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             disabled={loading}
           />
           <input
             id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
             placeholder="Contraseña (mín. 6 caracteres)"
-            className="!text-white w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+            className="!text-white w-full px-4 py-2.5 sm:py-3 text-sm sm:text-base bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             disabled={loading}
           />
           <input
             id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Confirmar Contraseña"
-            className="!text-white w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+            className="!text-white w-full px-4 py-2.5 sm:py-3 text-sm sm:text-base bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             disabled={loading}
           />
 
           <button
             type="submit"
             disabled={loading || success !== ''} // Deshabilitar también si el registro fue exitoso
-            className="w-full px-4 py-3 bg-amber-400 hover:bg-amber-300 text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full px-4 py-3 sm:py-3.5 md:py-4 text-sm sm:text-base md:text-lg bg-blue-400 hover:bg-blue-300 text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
           </button>
         </form>
 
-        <div className="text-center mt-6">
-          <p className="text-gray-400 text-sm">
+        <div className="text-center mt-6 md:mt-8">
+          <p className="text-gray-400 text-sm sm:text-base">
             ¿Ya tienes una cuenta?{' '}
-            <Link href="/login" className="text-amber-400 hover:text-amber-300 font-medium">
+            <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium">
               Inicia sesión
             </Link>
           </p>
