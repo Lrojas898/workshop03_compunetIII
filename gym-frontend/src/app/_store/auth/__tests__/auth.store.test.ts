@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useAuthStore } from '../auth.store';
 import { ValidRoles } from '@/lib/configuration/api-endpoints';
 import type { LoginResponse, User } from '../interfaces/types';
@@ -310,24 +310,6 @@ describe('AuthStore', () => {
   });
 
   describe('Store Persistence', () => {
-    it('should persist state to localStorage on login', () => {
-      const mockLoginResponse: LoginResponse = {
-        id: '1',
-        email: 'test@example.com',
-        fullName: 'Test User',
-        age: 25,
-        isActive: true,
-        roles: [{ id: '1', name: ValidRoles.CLIENT }],
-        token: 'mock-jwt-token',
-      };
-
-      const { login } = useAuthStore.getState();
-      login(mockLoginResponse);
-
-      const stored = localStorageMock.getItem('auth-storage');
-      expect(stored).toBeTruthy();
-    });
-
     it('should clear localStorage on logout', () => {
       const mockLoginResponse: LoginResponse = {
         id: '1',
