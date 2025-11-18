@@ -11,6 +11,12 @@ Gym Manager es una aplicación web completa para administrar un gimnasio, con fu
 - Analíticas y reportes
 - Dashboard específicos por rol
 
+## Equipo
+* Luis Manuel Rojas Correa - A00399289
+* Santiago Angel Ordoñez - A00379822
+* Cristian Molina - A00404853
+* Juan Camilo Corrales Osvath - A00366910
+
 ## Requisitos Previos
 
 - Node.js 18+ (se recomienda la versión LTS actual)
@@ -238,3 +244,5 @@ npm start
 ## Contacto y Soporte
 
 Para problemas, preguntas o sugerencias, contacta con el equipo de desarrollo.
+
+
