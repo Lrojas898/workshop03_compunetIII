@@ -6,7 +6,7 @@ describe('template spec', () => {
     cy.get('#password').type('admin123');
     cy.get('button.w-full').click();
     cy.get('a[href="/admin/classes"] div.items-start').click();
-    cy.get('tr:nth-child(2) button.text-blue-600 svg.lucide path').click();
+    cy.contains('tr', 'CrossFit 5:00 AM').find('button[title="Editar"]').click();
     cy.get('#name').click();
     cy.get('#name').clear();
     cy.get('#name').type('gym solo gym');

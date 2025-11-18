@@ -6,7 +6,8 @@ describe('template spec', () => {
     cy.get('#password').type('coach123');
     cy.get('button.w-full').click();
     cy.get('h3.text-lg').click();
-    cy.get('button.text-base').click();
+    cy.contains('button', 'Nueva Clase').click();
+    cy.contains('h3', 'Nueva Clase').should('be.visible');
     cy.get('#name').click();
     cy.get('#name').type('clase de salsa');
     cy.get('#description').click();
