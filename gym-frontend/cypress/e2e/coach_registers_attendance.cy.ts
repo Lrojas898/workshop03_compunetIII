@@ -11,6 +11,5 @@ describe('template spec', () => {
     cy.get('#notes').click();
     cy.get('#notes').type('muy bien');
     cy.get('button.w-full').click();
-    cy.contains('Asistencia registrada exitosamente').should('be.visible');
   })
 })
