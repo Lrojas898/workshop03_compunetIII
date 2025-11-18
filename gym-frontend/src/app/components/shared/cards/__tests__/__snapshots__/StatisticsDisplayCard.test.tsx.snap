@@ -1,0 +1,27 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`StatisticsDisplayCard > Snapshots > should match snapshot 1`] = `
+<div
+  class="border rounded-lg p-6"
+>
+  <div
+    class="flex justify-between items-start"
+  >
+    <div>
+      <p
+        class="text-sm text-gray-600"
+      >
+        Total Users
+      </p>
+      <p
+        class="text-3xl font-bold"
+      >
+        1,234
+      </p>
+    </div>
+    <div
+      class="text-blue-500"
+    />
+  </div>
+</div>
+`;

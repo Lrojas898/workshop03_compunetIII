@@ -90,6 +90,7 @@ export function RegisterForm() {
 
       // Redirigir al dashboard según rol
       setTimeout(() => {
+        // Validar que roles existe y tiene elementos
         const userRole = response.roles[0]?.name
         switch (userRole) {
           case 'admin':
