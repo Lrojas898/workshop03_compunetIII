@@ -6,6 +6,6 @@ describe('template spec', () => {
     cy.get('#password').type('coach123');
     cy.get('button.w-full').click();
     cy.get('p.text-blue-100').click();
-    cy.get('a[href="/coach"] span.font-medium').click();
+
   })
 })

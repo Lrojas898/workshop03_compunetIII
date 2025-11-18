@@ -20,7 +20,7 @@ import attendancesService from '@/app/services/attendances/attendances.service'
 import { useAuthStore } from '@/app/_store/auth/auth.store'
 import { Modal } from '@/app/components/ui/Modal'
 import type { Class, CreateClassDto } from '@/app/interfaces/classes.interface'
-import type { ClassAttendance } from '@/app/interfaces/attendances.interface'
+import type { ClassAttendance } from '@/app/interfaces/attendance.interface'
 
 interface ClassManagementProps {
   userRole?: string
