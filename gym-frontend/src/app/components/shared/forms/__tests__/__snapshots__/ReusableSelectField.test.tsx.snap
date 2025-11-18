@@ -1,0 +1,9 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ReusableSelectField > Snapshots > should match snapshot 1`] = `
+<div>
+  <p>
+    Reusable Select Field Component
+  </p>
+</div>
+`;
